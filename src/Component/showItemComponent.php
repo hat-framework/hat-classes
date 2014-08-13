@@ -104,12 +104,12 @@ class showItemComponent extends Object{
             switch ($type){
                 case 'date':
                     if($var == '0000-00-00' || $var == '0000-00-00 00:00:00'){ $var = ""; }
-                    else $var = \\classes\Classes\timeResource::Date2StrBr($var, false);
+                    else $var = \classes\Classes\timeResource::Date2StrBr($var, false);
                     break;
                 case 'datetime': 
                 case 'timestamp': 
                     if($var == '0000-00-00' || $var == '0000-00-00 00:00:00'){ $var = ""; }
-                    else $var = \\classes\Classes\timeResource::Date2StrBr($var);
+                    else $var = \classes\Classes\timeResource::Date2StrBr($var);
                     break;
                 case 'bit': 
                     $var = ($var == 1 || $var === true)?"Sim":"Não";
