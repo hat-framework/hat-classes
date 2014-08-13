@@ -1,5 +1,6 @@
 <?php
 
+namespace classes\Classes;
 class timeResource{
     
     /**
@@ -99,8 +100,8 @@ class timeResource{
             default:   $X = 1;
         }
         //separa data do tempo
-        $time1 = timeResource::Timestamp2Time($d2);
-        $time2 = timeResource::Timestamp2Time($d1);
+        $time1 = \classes\Classes\timeResource::Timestamp2Time($d2);
+        $time2 = \classes\Classes\timeResource::Timestamp2Time($d1);
         $res   = ($time1 - $time2)/$X;
         //echo "$time1 - $time2 - $X";
         //if($res > -1/10 && $res < 1/10)$res = 0;
@@ -110,19 +111,19 @@ class timeResource{
     
     public static function getFormatedTimestampDiff($date, $frase_ini = "", $frase_encerra = ""){
         $str = $frase_ini;
-        $intervalo = timeResource::diffDate($date);
+        $intervalo = \classes\Classes\timeResource::diffDate($date);
         if ($intervalo > 0)
             $str = $frase_encerra;
         else {
-            $intervalo = abs(timeResource::diffDate($date, "", "D"));
+            $intervalo = abs(\classes\Classes\timeResource::diffDate($date, "", "D"));
             if (abs($intervalo) > 2)
                 $str .= "$intervalo Dias";
             else {
-                $intervalo = abs(timeResource::diffDate($date, "", "H"));
+                $intervalo = abs(\classes\Classes\timeResource::diffDate($date, "", "H"));
                 if (abs($intervalo) > 2)
                     $str .= "$intervalo Horas";
                 else {
-                    $intervalo = abs(timeResource::diffDate($date, "", "MI"));
+                    $intervalo = abs(\classes\Classes\timeResource::diffDate($date, "", "MI"));
                     if ($intervalo > 1)
                         $str .= " $intervalo Minutos";
                     else
@@ -248,7 +249,7 @@ class timeResource{
         
         if(!function_exists('dias')){
             function dias($dateTime, $dias, $en, $br, $show_time = true){
-                $dateTime = timeResource::Timestamp2Time($dateTime);
+                $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
                 $stime = ($show_time)?", às ". date("H:i:s", $dateTime):"";
                 switch ($dias){
                     case -2: $str = "Depois de amanhã $stime"; break;
@@ -267,27 +268,27 @@ class timeResource{
         if(!function_exists('anos')){
             function anos($dateTime, $anos, $en, $br, $show_time = true){
                 $stime = ($show_time)?"\à\s H:i:s":"";
-                $dateTime = timeResource::Timestamp2Time($dateTime);
+                $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
                 return str_replace($en, $br, date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
             }
         }
         
         //diferenca dentro de uma hora
-        $minutos = timeResource::diffDate($dateTime, "", "Mi");
-        if(abs($minutos) < 60) return minutos($dateTime, $minutos, timeResource::$en, timeResource::$br);
+        $minutos = \classes\Classes\timeResource::diffDate($dateTime, "", "Mi");
+        if(abs($minutos) < 60) return minutos($dateTime, $minutos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);
             
         //diferenca dentro de um dia
-        $horas = timeResource::diffDate($dateTime, "", "H");
-        if(abs($horas) < 24) return horas($dateTime, $horas, timeResource::$en, timeResource::$br);
+        $horas = \classes\Classes\timeResource::diffDate($dateTime, "", "H");
+        if(abs($horas) < 24) return horas($dateTime, $horas, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);
 
         //se está no mesmo ano ou se existe uma diferença de no maximo 2 dias
-        $dias = timeResource::diffDate($dateTime, "", "D");
-        if(date("Y", timeResource::Timestamp2Time($dateTime)) == date("Y") || abs($dias) <= 7)
-             return dias($dateTime, $dias, timeResource::$en, timeResource::$br, $show_time);
+        $dias = \classes\Classes\timeResource::diffDate($dateTime, "", "D");
+        if(date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == date("Y") || abs($dias) <= 7)
+             return dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
             
         //diferenca dentro de mais de um ano
-        $anos = timeResource::diffDate($dateTime, "", "Y");
-        return anos($dateTime, $anos, timeResource::$en, timeResource::$br, $show_time);
+        $anos = \classes\Classes\timeResource::diffDate($dateTime, "", "Y");
+        return anos($dateTime, $anos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
     }
     
     public static function getFormatedDate($date = ""){
@@ -335,7 +336,7 @@ class timeResource{
      * @return time
      */
     public static function getTimeOfDate($date = ""){
-        return ($date == "")? date("H:i:s"):date("H:i:s", timeResource::Timestamp2Time($date));
+        return ($date == "")? date("H:i:s"):date("H:i:s", \classes\Classes\timeResource::Timestamp2Time($date));
     }
     
     private static $unidade = array('day', 'week', 'month', 'year', 'hour', 'minute', 'second');
@@ -349,7 +350,7 @@ class timeResource{
     public static function subDateTime($date, $qtd = 1, $unidade = 'day'){
         if($date === ""){$date = self::getDbDate();}
         $format = self::getDateFormat($date);
-        if(!in_array($unidade, timeResource::$unidade)){
+        if(!in_array($unidade, \classes\Classes\timeResource::$unidade)){
             die("Erro ao subtrair string, parâmetro unidade inválido");
         }
         $date = date_create($date);
@@ -371,7 +372,7 @@ class timeResource{
      */
     public static function addDateTime($date, $qtd = 1, $unidade = 'day'){
         $format = self::getDateFormat($date);
-        if(!in_array($unidade, timeResource::$unidade)){
+        if(!in_array($unidade, \classes\Classes\timeResource::$unidade)){
             die("Erro ao subtrair string, parâmetro unidade inválido");
         }
         $date = date_create($date);

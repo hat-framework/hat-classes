@@ -287,12 +287,12 @@ class Component extends Object{
         switch ($dados[$name]["type"]){
             case 'date':
                 if($valor == '0000-00-00') return "";
-                $valor = timeResource::getFormatedDate($valor);
+                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
                 break;
             case 'datetime': 
             case 'timestamp': 
                 if($valor == '0000-00-00' || $valor == '0000-00-00 00:00:00') return "";
-                $valor = timeResource::getFormatedDate($valor);
+                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
                 break;
             case 'time': 
                 if($valor == '00:00:00' || $valor == '00:00') return "";

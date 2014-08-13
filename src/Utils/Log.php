@@ -28,7 +28,7 @@ class Log{
         if(strstr($conteudo, 'inici')){ $conteudo = "<hr/>$conteudo";}
         if(strstr($conteudo, 'concl')){ $conteudo = "$conteudo<hr/>";}
         $obj = fileSaver::LoadFileSaver(self::$file_dir, false);
-        $date = \timeResource::getDbDate('');
+        $date = \\classes\Classes\timeResource::getDbDate('');
         if($format == 'json'){ $conteudo = "{data:'$date', conteudo:'$conteudo'}";}
         if($format != 'noDate'){ $conteudo = "$date - $conteudo \n";}
         $conteudo = $obj->prepareContent($conteudo);

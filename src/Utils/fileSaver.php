@@ -48,7 +48,7 @@ class fileSaver{
         if($this->expires === ""){
 //            if(file_exists($file) === false){return false;}
 //            $dt = date("Y-m-d H:i:s.", filemtime($file));
-//            $diff = \timeResource::diffDate($dt, "", "Mi");
+//            $diff = \\classes\Classes\timeResource::diffDate($dt, "", "Mi");
 //            if($diff > $this->expires){$this->delete($cache_name) === false;}
         }
         return(file_exists($file));

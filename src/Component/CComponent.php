@@ -25,12 +25,12 @@ class CComponent extends Object{
         switch ($this->dados[$name]["type"]){
             case 'date':
                 if($valor == '0000-00-00') return "";
-                $valor = timeResource::Date2StrBr($valor, false);
+                $valor = \classes\Classes\timeResource::Date2StrBr($valor, false);
                 break;
             case 'datetime': 
             case 'timestamp': 
                 if($valor == '0000-00-00' || $valor == '0000-00-00 00:00:00') return "";
-                $valor = timeResource::Date2StrBr($valor);
+                $valor = \classes\Classes\timeResource::Date2StrBr($valor);
                 break;
             case 'text':
             case 'varchar':

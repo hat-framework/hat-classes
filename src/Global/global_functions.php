@@ -137,7 +137,7 @@
 function sendEmailToWebmasters($assunto, $msg){
     $obj             = new \classes\Classes\Object();
     $mail            = $obj->LoadResource('email', 'mail');
-    $msg            .= "<hr/>Horário: ". timeResource::getDbDate()."<br/>url: (http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']})";
+    $msg            .= "<hr/>Horário: ". \classes\Classes\timeResource::getDbDate()."<br/>url: (http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']})";
     $emails          = $obj->LoadModel('usuario/login', 'uboj')->getWebmastersMail();
     if(empty($emails)){
         \classes\Utils\Log::save("system/mail/error", "Nenhum webmaster encontrado no método getWebmastersMail");

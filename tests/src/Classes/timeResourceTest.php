@@ -27,7 +27,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::getWeedDay
+     * @covers \classes\Classes\timeResource::getWeedDay
      * @todo   Implement testGetWeedDay().
      */
     public function testGetWeedDay() {
@@ -38,7 +38,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::diffWeekDay
+     * @covers \classes\Classes\timeResource::diffWeekDay
      * @todo   Implement testDiffWeekDay().
      */
     public function testDiffWeekDay() {
@@ -49,7 +49,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::absDiffWeekDay
+     * @covers \classes\Classes\timeResource::absDiffWeekDay
      * @todo   Implement testAbsDiffWeekDay().
      */
     public function testAbsDiffWeekDay() {
@@ -60,7 +60,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::WeekDay2Int
+     * @covers \classes\Classes\timeResource::WeekDay2Int
      * @todo   Implement testWeekDay2Int().
      */
     public function testWeekDay2Int() {
@@ -71,7 +71,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::diffDate
+     * @covers \classes\Classes\timeResource::diffDate
      * @todo   Implement testDiffDate().
      */
     public function testDiffDate() {
@@ -82,7 +82,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::getFormatedTimestampDiff
+     * @covers \classes\Classes\timeResource::getFormatedTimestampDiff
      * @todo   Implement testGetFormatedTimestampDiff().
      */
     public function testGetFormatedTimestampDiff() {
@@ -93,7 +93,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::Timestamp2Time
+     * @covers \classes\Classes\timeResource::Timestamp2Time
      * @todo   Implement testTimestamp2Time().
      */
     public function testTimestamp2Time() {
@@ -104,7 +104,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::addDayIntoDate
+     * @covers \classes\Classes\timeResource::addDayIntoDate
      * @todo   Implement testAddDayIntoDate().
      */
     public function testAddDayIntoDate() {
@@ -115,7 +115,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::subDayIntoDate
+     * @covers \classes\Classes\timeResource::subDayIntoDate
      * @todo   Implement testSubDayIntoDate().
      */
     public function testSubDayIntoDate() {
@@ -126,7 +126,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::isValidDate
+     * @covers \classes\Classes\timeResource::isValidDate
      * @todo   Implement testIsValidDate().
      */
     public function testIsValidDate() {
@@ -137,7 +137,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::isEmptyTime
+     * @covers \classes\Classes\timeResource::isEmptyTime
      * @todo   Implement testIsEmptyTime().
      */
     public function testIsEmptyTime() {
@@ -148,7 +148,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::Date2StrBr
+     * @covers \classes\Classes\timeResource::Date2StrBr
      * @todo   Implement testDate2StrBr().
      */
     public function testDate2StrBr() {
@@ -159,7 +159,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::getFormatedDate
+     * @covers \classes\Classes\timeResource::getFormatedDate
      * @todo   Implement testGetFormatedDate().
      */
     public function testGetFormatedDate() {
@@ -170,7 +170,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::getDbDate
+     * @covers \classes\Classes\timeResource::getDbDate
      * @todo   Implement testGetDbDate().
      */
     public function testGetDbDate() {
@@ -181,7 +181,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::convert
+     * @covers \classes\Classes\timeResource::convert
      * @todo   Implement testConvert().
      */
     public function testConvert() {
@@ -192,7 +192,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::detectDateType
+     * @covers \classes\Classes\timeResource::detectDateType
      * @todo   Implement testDetectDateType().
      */
     public function testDetectDateType() {
@@ -203,7 +203,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::getTimeOfDate
+     * @covers \classes\Classes\timeResource::getTimeOfDate
      * @todo   Implement testGetTimeOfDate().
      */
     public function testGetTimeOfDate() {
@@ -214,7 +214,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::subDateTime
+     * @covers \classes\Classes\timeResource::subDateTime
      * @todo   Implement testSubDateTime().
      */
     public function testSubDateTime() {
@@ -225,7 +225,7 @@ class timeResourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers timeResource::addDateTime
+     * @covers \classes\Classes\timeResource::addDateTime
      * @todo   Implement testAddDateTime().
      */
     public function testAddDateTime() {
