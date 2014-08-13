@@ -19,7 +19,7 @@ abstract class JsPlugin extends Object{
         $path   = implode("/", $plugin);
         $path   = ($path == "")? "": "/$path";
         
-        $link                          = "$resource/jsplugins/$modulo$path";
+        $link                          = "$resource/src/jsplugins/$modulo$path";
         $this->url                     = URL       . "recursos/" .$link ;
         $this->url_relative            = PROJECT   ."recursos/$link";
         $this->path                    = RESOURCES . "$link";
@@ -36,5 +36,3 @@ abstract class JsPlugin extends Object{
         
     abstract function init();
 }
-
-?>
