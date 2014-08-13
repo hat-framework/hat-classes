@@ -309,10 +309,13 @@ class Object{
                 return $this->$name;
             }
         }
-        $file = RESOURCES . "$resource"."Resource.php";
-        $explode = explode("/", $resource);
-        $explode = end($explode);
-        $class    = $explode . "Resource";
+        $explode   = explode("/", $resource);
+        $classname = array_pop($explode);
+        $res_dir   = implode("/", $explode);
+        $class     = $classname . "Resource";
+        if($res_dir === ""){$res_dir = $classname;}
+        $file      = RESOURCES . "$res_dir/src/$class.php";
+        getTrueDir($file);
         //echo "\n ($class) \n";
         if(!file_exists($file)){
             $msg  = __CLASS__ . ": O recurso $resource não existe! <br/> Diretório procurado: $file";
@@ -429,7 +432,8 @@ class Object{
         
         //procura o arquivo
         $this->LoadConfigFromResource($resource);
-        $folder = RESOURCES . "$resource/jsplugins/$modulo/$path$class.php";
+        $folder = RESOURCES . "$resource/src/jsplugins/$modulo/$path$class.php";
+        getTrueDir($folder);
         $this->LoadFile($folder);
         $this->CheckClass($class);
         
@@ -511,8 +515,8 @@ class Object{
         if(in_array($resource, $loaded)) return;
         $loaded[] = $resource;
         $this->LoadAllFilesFromDir(SUBDOMAIN_RESOURCES . "/$resource");
-        $this->LoadAllFilesFromDir(RESOURCES . "$resource/defines");
-        $this->LoadAllFilesFromDir(RESOURCES . "$resource/interfaces");
+        $this->LoadAllFilesFromDir(RESOURCES . "$resource/src/defines");
+        $this->LoadAllFilesFromDir(RESOURCES . "$resource/src/interfaces");
     }
     
     private function LoadAllFilesFromDir($diretorio){
