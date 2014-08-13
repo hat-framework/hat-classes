@@ -1,5 +1,5 @@
 {
-    "name": "hat-framework/hat-classes",
+    "name": "hatframework/hatclasses",
     "type": "library",
     "description": "Core classes of hat-framework",
     "keywords": ["php","framework","mvc"],
@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-0": {
-            "hat-framework": "src"
+            "hatframework": "src"
         }
     }
 }
