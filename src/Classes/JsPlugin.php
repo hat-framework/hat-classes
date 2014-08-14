@@ -21,11 +21,11 @@ abstract class JsPlugin extends Object{
         
         $link                          = "$resource/src/jsplugins/$modulo$path";
         $this->url                     = URL       . "recursos/" .$link ;
-        $this->url_relative            = PROJECT   ."recursos/$link";
+        $this->url_relative            = PROJECT   . DIR_RESOURCE_RELATIVE ."$link";
         $this->path                    = RESOURCES . "$link";
         $this->resource_path           = RESOURCES . $resource;
-        $this->resource_url            = URL       . "recursos/$resource";
-        $this->resource_url_relative   = PROJECT    ."recursos/$resource";
+        $this->resource_url            = URL       . DIR_RESOURCE_RELATIVE . "$resource";
+        $this->resource_url_relative   = PROJECT   . DIR_RESOURCE_RELATIVE ."$resource";
     }
     
     protected final function start_scripts($scripts) {
