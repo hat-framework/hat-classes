@@ -124,6 +124,12 @@
         return $diretorio;
     }
     
+    function getTrueUrl(&$url){
+        $dir = str_replace(array("\\\\\\",  '\\\\', '\\'), '/', $url);
+        $url = str_replace(array('\/', '/\\'), '/', $dir);
+        return $url;
+    }
+    
     function array_merge_recursive2($paArray1, $paArray2)
 {
     if (!is_array($paArray1) or !is_array($paArray2)) { return $paArray2; }

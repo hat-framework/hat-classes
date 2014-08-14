@@ -13,17 +13,17 @@ abstract class JsPlugin extends Object{
     
     protected final function __construct($plugin) {
         $this->LoadResource("html", "Html");
-        $plugin  = explode("/",$plugin);
+        $plugin   = explode("/",$plugin);
         $resource = array_shift($plugin);
-        $modulo = array_shift($plugin);
-        $path   = implode("/", $plugin);
-        $path   = ($path == "")? "": "/$path";
+        $modulo   = array_shift($plugin);
+        $path     = implode("/", $plugin);
+        $path     = ($path == "")? "": "/$path";
         
         $link                          = "$resource/src/jsplugins/$modulo$path";
         $this->url                     = URL       . DIR_RESOURCE_RELATIVE .$link ;
         $this->url_relative            = PROJECT   . DIR_RESOURCE_RELATIVE .$link;
-        $this->path                    = RESOURCES . $link;
-        $this->resource_path           = RESOURCES . $resource;
+        $this->path                    = RESOURCES . $link;         getTrueDir($this->path);
+        $this->resource_path           = RESOURCES . $resource;     getTrueDir($this->resource_path);
         $this->resource_url            = URL       . DIR_RESOURCE_RELATIVE .$resource;
         $this->resource_url_relative   = PROJECT   . DIR_RESOURCE_RELATIVE .$resource;
     }
