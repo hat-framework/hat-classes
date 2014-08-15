@@ -24,7 +24,7 @@ abstract class JsPlugin extends Object{
         $this->url                     = URL       . $relativeDir.$link ;
         $this->url_relative            = PROJECT   . $relativeDir.$link;
         $this->path                    = DIR_BASIC . $relativeDir.$link;  
-        $this->resource_path           = RESOURCES . $relativeDir;        
+        $this->resource_path           = DIR_BASIC . $relativeDir;        
         $this->resource_url            = URL       . $relativeDir;
         $this->resource_url_relative   = PROJECT   . $relativeDir;
         getTrueDir($this->path);
