@@ -19,13 +19,16 @@ abstract class JsPlugin extends Object{
         $path     = implode("/", $plugin);
         $path     = ($path == "")? "": "/$path";
         
-        $link                          = "$resource/src/jsplugins/$modulo$path";
-        $this->url                     = URL       . DIR_RESOURCE_RELATIVE .$link ;
-        $this->url_relative            = PROJECT   . DIR_RESOURCE_RELATIVE .$link;
-        $this->path                    = RESOURCES . $link;         getTrueDir($this->path);
-        $this->resource_path           = RESOURCES . $resource;     getTrueDir($this->resource_path);
-        $this->resource_url            = URL       . DIR_RESOURCE_RELATIVE .$resource;
-        $this->resource_url_relative   = PROJECT   . DIR_RESOURCE_RELATIVE .$resource;
+        $relativeDir                   = Registered::getResourceLocation($resource)."/";
+        $link                          = "src/jsplugins/$modulo$path";
+        $this->url                     = URL       . $relativeDir.$link ;
+        $this->url_relative            = PROJECT   . $relativeDir.$link;
+        $this->path                    = DIR_BASIC . $relativeDir.$link;  
+        $this->resource_path           = RESOURCES . $relativeDir;        
+        $this->resource_url            = URL       . $relativeDir;
+        $this->resource_url_relative   = PROJECT   . $relativeDir;
+        getTrueDir($this->path);
+        getTrueDir($this->resource_path);
     }
     
     protected final function start_scripts($scripts) {

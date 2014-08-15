@@ -314,13 +314,12 @@ class Object{
         $res_dir   = implode("/", $explode);
         $class     = $classname . "Resource";
         if($res_dir === ""){$res_dir = $classname;}
-        $file      = RESOURCES . "$res_dir/src/$class.php";
+        $file      = DIR_BASIC .Registered::getResourceLocation($res_dir)."/src/$class.php";
         getTrueDir($file);
         //echo "\n ($class) \n";
         if(!file_exists($file)){
             $msg  = __CLASS__ . ": O recurso $resource não existe! <br/> Diretório procurado: $file";
-            $file = RESOURCES . "$resource/$class".".php";
-            
+            $file = DIR_BASIC .Registered::getResourceLocation($res_dir)."/$class.php";
             if(!file_exists($file)){
                 $msg  .= "<br/> Diretório procurado: $file";
                 throw new \Exception($msg);
@@ -422,19 +421,20 @@ class Object{
         
         $pvar = $plugin;
         //seta o modulo e a pasta do modulo
-        $plugin  = explode("/",$plugin);
+        $plugin   = explode("/",$plugin);
         $resource = array_shift($plugin);
-        $modulo = array_shift($plugin);
-        $class  = array_pop($plugin);
-        $class  = (($class == "")?$modulo:$class)."Js";
-        $path   = implode("/", $plugin);
-        $path   = ($path == "")? "": $path . "/";
+        $modulo   = array_shift($plugin);
+        $class    = array_pop($plugin);
+        $class    = (($class == "")?$modulo:$class)."Js";
+        $path     = implode("/", $plugin);
+        $path     = ($path == "")? "": $path . "/";
         
         //procura o arquivo
         $this->LoadConfigFromResource($resource);
-        $folder = RESOURCES . "$resource/src/jsplugins/$modulo/$path$class.php";
-        getTrueDir($folder);
-        $this->LoadFile($folder);
+        
+        $file      = DIR_BASIC .Registered::getResourceLocation($resource)."/src/jsplugins/$modulo/$path$class.php";
+        getTrueDir($file);
+        $this->LoadFile($file);
         $this->CheckClass($class);
         
         $obj = call_user_func("$class::getInstanceOf", $pvar);
@@ -503,11 +503,12 @@ class Object{
         $this->LoadAllFilesFromDir(SUBDOMAIN_MODULOS . "$plugin");
         $this->LoadAllFilesFromDir(MODULOS . "$plugin/Config/defines");
         $this->LoadAllFilesFromDir(MODULOS . "$plugin/Config/interfaces");
-
     }
 
     public function LoadConfigFromResource($resource){
-        $autoload = RESOURCES."$resource/autoload.php";
+        $resourceLocation = Registered::getResourceLocation($resource);
+        $autoload  = DIR_BASIC ."$resourceLocation/$resource/autoload.php";
+        getTrueDir($autoload);
         if(file_exists($autoload)){require_once $autoload;}
         
         if($resource == "files/dir") return;
@@ -515,8 +516,8 @@ class Object{
         if(in_array($resource, $loaded)) return;
         $loaded[] = $resource;
         $this->LoadAllFilesFromDir(SUBDOMAIN_RESOURCES . "/$resource");
-        $this->LoadAllFilesFromDir(RESOURCES . "$resource/src/defines");
-        $this->LoadAllFilesFromDir(RESOURCES . "$resource/src/interfaces");
+        $this->LoadAllFilesFromDir(DIR_BASIC."$resourceLocation/src/defines");
+        $this->LoadAllFilesFromDir(DIR_BASIC."$resourceLocation/src/interfaces");
     }
     
     private function LoadAllFilesFromDir($diretorio){
