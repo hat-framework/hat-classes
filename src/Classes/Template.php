@@ -107,12 +107,12 @@ class Template extends Object{
         $controller = array_shift($view);
         $view		= implode("/", $view);
         
-        $file = MODULOS . "$module/$controller/views/$view"."View.html";
+        $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.html";
         try {
             if(file_exists($file))
                 require_once $file ;
             else{
-                $file = MODULOS . "$module/$controller/views/$view"."View.phtml";
+                $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.phtml";
                 if(file_exists($file)){
                     require_once $file ;
                 }
@@ -174,7 +174,7 @@ class Template extends Object{
     
     private function loadLoader($modulo){
         $class = $modulo."Loader";
-        $file = MODULOS . "$modulo/Config/$class.php";
+        $file = Registered::getPluginLocation($modulo, true) . "/Config/$class.php";
         if(!file_exists($file)) return;
         require_once $file;
         $menu_obj = new $class();

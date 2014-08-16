@@ -16,7 +16,7 @@ class CSystem extends System {
     }
     
     public function PathExists($modulo, $controller, $action){
-    	$file = MODULOS . "$modulo/$controller/classes/$controller"."Controller.php";
+    	$file = Registered::getPluginLocation($modulo, true) . "/$controller/classes/$controller"."Controller.php";
     	$this->file = $file;
     	return file_exists($file);
     }
@@ -34,7 +34,7 @@ class CSystem extends System {
     
     private function loadLoader($modulo){
         $class = $modulo."Loader";
-        $file = MODULOS . "$modulo/Config/$class.php";
+        $file = Registered::getPluginLocation($modulo, true) . "/Config/$class.php";
         $this->LoadConfigFromPlugin($modulo);
         if(!file_exists($file)) return;
         require_once $file;

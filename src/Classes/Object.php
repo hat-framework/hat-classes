@@ -212,7 +212,7 @@ class Object{
         $path   = ($path == "")? "": $path . "/";
 
         //procura o arquivo
-        $folder = MODULOS . "$plugin/$modulo/classes/$path$file.php";
+        $folder = Registered::getPluginLocation($plugin)."/$modulo/classes/$path$file.php";
         if(!file_exists($folder)){
             if(!$throws){
                 $cache[$modelname] = null;
@@ -264,7 +264,7 @@ class Object{
         $path   = implode("/", $model);
         $path   = ($path == "")? "": $path . "/";
         
-        $folder = MODULOS . "$plugin/$modulo/classes/$path$class.php";
+        $folder = Registered::getPluginLocation($plugin) . "/$modulo/classes/$path$class.php";
         if(!file_exists($folder)){
             //echo "Arquivo $folder não encontrado!<br/>";
             if($throws) throw new \Exception("O arquivo da classe ($class) não foi encontrada ou não existe");
@@ -367,7 +367,7 @@ class Object{
         $path   = ($path == "")? "": $path . "/";
 
         //procura o arquivo
-        $folder = MODULOS . "$plugin/$modulo/classes/$path$file.php";
+        $folder = Registered::getPluginLocation($plugin, true) . "/$modulo/classes/$path$file.php";
         if(!file_exists($folder)){
             if(!$throws){
                 $cache[$modelname] = null;
@@ -469,10 +469,10 @@ class Object{
         $path   = ($path == "")? "": $path . "/";
         
         //procura o arquivo
-        $folder = MODULOS . "$plugin/$modulo/components/$path$class.php";
+        $folder = Registered::getPluginLocation($plugin, true) . "/$modulo/components/$path$class.php";
         $classname = $class;
         if(!file_exists($folder)){
-            $folder = MODULOS . "$plugin/$modulo/classes/$path$class.php";
+            $folder = Registered::getPluginLocation($plugin, true) . "/$modulo/classes/$path$class.php";
             if(!file_exists($folder)) $classname = "\classes\Component\Component";
             else require_once $folder;
         }
@@ -500,9 +500,10 @@ class Object{
         static $loaded = array();
         if(in_array($plugin, $loaded)) return;
         $loaded[] = $plugin;
+        $dir      = Registered::getPluginLocation($plugin, true);
         $this->LoadAllFilesFromDir(SUBDOMAIN_MODULOS . "$plugin");
-        $this->LoadAllFilesFromDir(MODULOS . "$plugin/Config/defines");
-        $this->LoadAllFilesFromDir(MODULOS . "$plugin/Config/interfaces");
+        $this->LoadAllFilesFromDir("$dir/Config/defines");
+        $this->LoadAllFilesFromDir("$dir/Config/interfaces");
     }
 
     public function LoadConfigFromResource($resource){
