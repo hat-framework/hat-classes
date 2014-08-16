@@ -16,31 +16,43 @@ class Registered{
         self::$init = true;
     }
     
-    public static function getPluginLocation($plugin){
-        return self::getLocation($plugin, self::$plugins);
+    public static function getPluginLocation($plugin, $full_path = false){
+        return self::getLocation($plugin, self::$plugins, $full_path);
     }
     
-    public static function getResourceLocation($resource){
-        return self::getLocation($resource, self::$resources);
+    public static function getResourceLocation($resource, $full_path = false){
+        return self::getLocation($resource, self::$resources, $full_path);
     }
     
-    public static function getTemplateLocation($templates){
-        return self::getLocation($templates, self::$templates);
+    public static function getTemplateLocation($templates, $full_path = false){
+        return self::getLocation($templates, self::$templates, $full_path);
     }
     
-    public static function getAllPluginsLocation(){
-        return self::$plugins;
+    public static function getAllPluginsLocation($full_path = false){
+        return self::getAllLocation(self::$plugins, $full_path);
     }
     
-    public static function getAllResourcesLocation(){
-        return self::$resources;
+    public static function getAllResourcesLocation($full_path = false){
+        return self::getAllLocation(self::$resources, $full_path);
     }
     
-    public static function getAllTemplatesLocation(){
-        return self::$templates;
+    public static function getAllTemplatesLocation($full_path = false){
+        return self::getAllLocation(self::$templates, $full_path);
     }
     
-    private static function getLocation($folder, $array){
-        return(array_key_exists($folder, $array))?$array[$folder]:"";
+    private static function getAllLocation($array, $full_path = false){
+        if(false === $full_path){return $array;}
+        foreach($array as &$value){
+            $value = DIR_BASIC ."$value";
+            getTrueDir($value);
+        }
+        return $array;
+    }
+    
+    private static function getLocation($folder, $array, $full_path = false){
+        $folder = (array_key_exists($folder, $array))?$array[$folder]:"";
+        if($folder === "" || false === $full_path)return $folder;
+        $folder = DIR_BASIC ."$folder";
+        return getTrueDir($folder);
     }
 }
