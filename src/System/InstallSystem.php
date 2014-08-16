@@ -32,7 +32,7 @@ class InstallSystem extends System {
         DefConstant("CURRENT_CONTROLLER" , 'setup');
         DefConstant("CURRENT_PAGE"       , "plugins/setup/$method/$temp");
         DefConstant("LINK"               , CURRENT_MODULE . "/".CURRENT_CONTROLLER);
-        $file = Registered::getPluginLocation("plugins", true) . "/setup/classes/setupAdmin.php";
+        $file = \classes\Classes\Registered::getPluginLocation("plugins", true) . "/setup/classes/setupAdmin.php";
         if(!file_exists($file)){
             throw new \classes\Exceptions\PageNotFoundException("Não foi possível encontrar o arquivo $file");
         }

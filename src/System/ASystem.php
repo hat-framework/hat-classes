@@ -22,7 +22,7 @@ class ASystem extends System {
     }
 
     public function PathExists($modulo, $controller, $action){
-    	$file = Registered::getPluginLocation($modulo, true) . "/$controller/classes/$controller"."Admin.php";
+    	$file = \classes\Classes\Registered::getPluginLocation($modulo, true) . "/$controller/classes/$controller"."Admin.php";
     	$this->file = $file;
     	return file_exists($file);
     }
@@ -47,7 +47,7 @@ class ASystem extends System {
         }
         
         $class = $this->modulo . "Loader";
-        $file = Registered::getPluginLocation($this->modulo, true) . "/Config/$class.php";
+        $file = \classes\Classes\Registered::getPluginLocation($this->modulo, true) . "/Config/$class.php";
         if(!file_exists($file))return;
         
         require_once $file;
@@ -65,7 +65,7 @@ class ASystem extends System {
         $avaible = array();
         foreach($plugins as $plug){
             $avaible[$plug] = true;
-            $file = Registered::getPluginLocation($plug, true)."/Config/features.php";
+            $file = \classes\Classes\Registered::getPluginLocation($plug, true)."/Config/features.php";
             if(!file_exists($file)) {continue;}
             require_once $file;
         }
