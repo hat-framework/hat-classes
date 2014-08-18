@@ -80,12 +80,12 @@ class Template extends Object{
     
     private function LoadHead($head = ""){
         if(is_array($this->vars))extract($this->vars);
-        require_once Registered::getPluginLocation('core', true)."/head.php";
+        require_once Registered::getTemplateLocation('core', true)."/head.php";
     }
 
     private function LoadRodape(){
         if(is_array($this->vars))extract($this->vars);
-        require_once Registered::getPluginLocation('core', true)."/rodape.php";
+        require_once Registered::getTemplateLocation('core', true)."/rodape.php";
     }
     
     private function getMenuPlugins(){
@@ -95,7 +95,7 @@ class Template extends Object{
     
     private function LoadMessages(){
         if(is_array($this->vars))extract($this->vars);
-        require_once Registered::getPluginLocation('core', true)."/messages.php";
+        require_once Registered::getTemplateLocation('core', true)."/messages.php";
     }
     
     private function load($view){
