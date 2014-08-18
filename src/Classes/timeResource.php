@@ -222,74 +222,68 @@ class timeResource{
      */
     public static function Date2StrBr($dateTime, $show_time = true){
         
-        if($dateTime == "") return "";
-        if(!function_exists('minutos')){
-            function minutos($dateTime, $minutos, $en, $br){
-                switch ($minutos){
-                    case -1: $str = "Dentro de um minuto"; break;
-                    case  1: $str = "Há um minuto";        break;
-                    case  0: $str = "Agora";               break;
-                    default: $str = ($minutos < 0)?"Dentro de ".abs($minutos)." minutos": "Há $minutos minutos";
-                }
-                return $str;
-            }
-        }
-        
-        if(!function_exists('horas')){
-            function horas($dateTime, $horas, $en, $br){
-                switch ($horas){
-                    case -1: $str = "Dentro de uma Hora";   break;
-                    case  1: $str = "Há uma Hora";          break;
-                    case  0: $str = "Há menos de uma Hora"; break;
-                    default: $str = ($horas < 0)?"Dentro de ".abs($horas)." Horas":"Há $horas Horas";
-                }
-                return $str;
-            }
-        }
-        
-        if(!function_exists('dias')){
-            function dias($dateTime, $dias, $en, $br, $show_time = true){
-                $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
-                $stime = ($show_time)?", às ". date("H:i:s", $dateTime):"";
-                switch ($dias){
-                    case -2: $str = "Depois de amanhã $stime"; break;
-                    case -1: $str = "Amanhã $stime";           break;
-                    case  1: $str = "Ontem $stime";            break;
-                    case  2: $str = "Anteontem $stime";        break;
-                    default: 
-                        $stime = ($show_time)?"\à\s H:i:s":"";
-                        if(abs($dias) <= 7) $str = str_replace($en, $br, date("l\, d \DE\ F $stime", $dateTime));
-                        else                $str = str_replace($en, $br, date("d \DE\ F $stime", $dateTime));
-                }
-                return $str;
-            }
-        }
-        
-        if(!function_exists('anos')){
-            function anos($dateTime, $anos, $en, $br, $show_time = true){
-                $stime = ($show_time)?"\à\s H:i:s":"";
-                $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
-                return str_replace($en, $br, date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
-            }
-        }
-        
+        if($dateTime == "") {return "";}
+
         //diferenca dentro de uma hora
         $minutos = \classes\Classes\timeResource::diffDate($dateTime, "", "Mi");
-        if(abs($minutos) < 60) return minutos($dateTime, $minutos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);
+        if(abs($minutos) < 60) {return self::minutos($dateTime, $minutos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
             
         //diferenca dentro de um dia
         $horas = \classes\Classes\timeResource::diffDate($dateTime, "", "H");
-        if(abs($horas) < 24) return horas($dateTime, $horas, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);
+        if(abs($horas) < 24) {return self::horas($dateTime, $horas, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
 
         //se está no mesmo ano ou se existe uma diferença de no maximo 2 dias
         $dias = \classes\Classes\timeResource::diffDate($dateTime, "", "D");
-        if(date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == date("Y") || abs($dias) <= 7)
-             return dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
-            
+        if(date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == date("Y") || abs($dias) <= 7){
+             return self::dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
+        }
+        
         //diferenca dentro de mais de um ano
         $anos = \classes\Classes\timeResource::diffDate($dateTime, "", "Y");
-        return anos($dateTime, $anos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
+        return self::anos($dateTime, $anos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
     }
+    
+        private static function anos($dateTime, $anos, $en, $br, $show_time = true){
+            $stime = ($show_time)?"\à\s H:i:s":"";
+            $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
+            return str_replace($en, $br, date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
+        } 
+        
+        private static function dias($dateTime, $dias, $en, $br, $show_time = true){
+            $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
+            $stime = ($show_time)?", às ". date("H:i:s", $dateTime):"";
+            switch ($dias){
+                case -2: $str = "Depois de amanhã $stime"; break;
+                case -1: $str = "Amanhã $stime";           break;
+                case  1: $str = "Ontem $stime";            break;
+                case  2: $str = "Anteontem $stime";        break;
+                default: 
+                    $stime = ($show_time)?"\à\s H:i:s":"";
+                    if(abs($dias) <= 7) $str = str_replace($en, $br, date("l\, d \DE\ F $stime", $dateTime));
+                    else                $str = str_replace($en, $br, date("d \DE\ F $stime", $dateTime));
+            }
+            return $str;
+        }
+        
+        private static function minutos($dateTime, $minutos, $en, $br){
+            switch ($minutos){
+                case -1: $str = "Dentro de um minuto"; break;
+                case  1: $str = "Há um minuto";        break;
+                case  0: $str = "Agora";               break;
+                default: $str = ($minutos < 0)?"Dentro de ".abs($minutos)." minutos": "Há $minutos minutos";
+            }
+            return $str;
+        }
+        
+        private static function horas($dateTime, $horas, $en, $br){
+            switch ($horas){
+                case -1: $str = "Dentro de uma Hora";   break;
+                case  1: $str = "Há uma Hora";          break;
+                case  0: $str = "Há menos de uma Hora"; break;
+                default: $str = ($horas < 0)?"Dentro de ".abs($horas)." Horas":"Há $horas Horas";
+            }
+            return $str;
+        }
     
     public static function getFormatedDate($date = ""){
         if($date == "")$date = date("Y-m-d H:i:s");
