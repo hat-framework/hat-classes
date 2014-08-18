@@ -16,7 +16,7 @@ class Template extends Object{
         $this->template = ($template == "")?CURRENT_TEMPLATE:$template;
 
         //verifica se o template setado existe, aplica o default caso nao exista
-        $file = TEMPLATES."$this->template/$this->template"."Template.php" ;
+        $file = \classes\Classes\Registered::getTemplateLocation($this->template, true)."/$this->template"."Template.php" ;
         if(!file_exists($file)) $this->template = CURRENT_TEMPLATE;
     }
     
@@ -33,7 +33,7 @@ class Template extends Object{
         $this->tags['keywords']    = SITE_KEYWORDS;
         $this->tags['robots']      = "FOLLOW";
         $this->tags['page_title']  = SITE_NOME;
-        $this->tags['favicon']     = URL_TEMPLATES . CURRENT_TEMPLATE . "/img/favicon.ico";
+        $this->tags['favicon']     = URL . \classes\Classes\Registered::getTemplateLocation($this->template) . "/img/favicon.ico";
 
         //se vem alguma metatag por parametro
         if(!empty ($tags)){
@@ -52,8 +52,8 @@ class Template extends Object{
             $this->LoadHead();
             echo "<body>";
             $this->load('body');
-            $file = TEMPLATES."$this->template/mainscripts.php" ;
-            if(file_exists($file))require $file;
+            $file = \classes\Classes\Registered::getTemplateLocation($this->template, true) ."/mainscripts.php" ;
+            if(file_exists($file)){require $file;}
             echo "</body>";
             $this->Html->flush(true);
             echo "</html>";
@@ -68,7 +68,7 @@ class Template extends Object{
     private function LoadTemplate(){
 
         //verifica se arquivo existe
-        $file = TEMPLATES."$this->template/$this->template"."Template.php" ;
+        $file = \classes\Classes\Registered::getTemplateLocation($this->template, true) ."/$this->template"."Template.php" ;
         if(!file_exists($file)) throw new \classes\Exceptions\PageNotFoundException("O template $this->template não foi encontrado!");
         
         if(is_array($this->vars)){
@@ -80,12 +80,12 @@ class Template extends Object{
     
     private function LoadHead($head = ""){
         if(is_array($this->vars))extract($this->vars);
-        require_once TEMPLATES."config/head.php";
+        require_once Registered::getPluginLocation('core', true)."/head.php";
     }
 
     private function LoadRodape(){
         if(is_array($this->vars))extract($this->vars);
-        require_once TEMPLATES."config/rodape.php";
+        require_once Registered::getPluginLocation('core', true)."/rodape.php";
     }
     
     private function getMenuPlugins(){
@@ -95,7 +95,7 @@ class Template extends Object{
     
     private function LoadMessages(){
         if(is_array($this->vars))extract($this->vars);
-        require_once TEMPLATES."config/messages.php";
+        require_once Registered::getPluginLocation('core', true)."/messages.php";
     }
     
     private function load($view){
@@ -159,7 +159,7 @@ class Template extends Object{
     }
     
     private function evento($nome_evento){
-    	$file = TEMPLATES . "$this->template/eventos/$nome_evento" . "Evento.php";
+    	$file = \classes\Classes\Registered::getTemplateLocation($this->template, true)."/eventos/$nome_evento" . "Evento.php";
      	if(file_exists($file)){
     		require_once($file);
     		$class = $nome_evento . "Evento";
