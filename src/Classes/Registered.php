@@ -16,6 +16,18 @@ class Registered{
         self::$init = true;
     }
     
+    public static function getPluginLocationUrl($plugin){
+        return URL .self::getLocation($plugin, self::$plugins, false);
+    }
+    
+    public static function getResourceLocationUrl($resource){
+        return URL .self::getLocation($resource, self::$resources, false);
+    }
+    
+    public static function getTemplateLocationUrl($templates){
+        return URL . self::getLocation($templates, self::$templates, false);
+    }
+    
     public static function getPluginLocation($plugin, $full_path = false){
         return self::getLocation($plugin, self::$plugins, $full_path);
     }
