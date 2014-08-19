@@ -314,12 +314,12 @@ class Object{
         $res_dir   = implode("/", $explode);
         $class     = $classname . "Resource";
         if($res_dir === ""){$res_dir = $classname;}
-        $file      = DIR_BASIC .Registered::getResourceLocation($res_dir)."/src/$class.php";
+        $file      = Registered::getResourceLocation($res_dir, true)."/src/$class.php";
         getTrueDir($file);
         //echo "\n ($class) \n";
         if(!file_exists($file)){
             $msg  = __CLASS__ . ": O recurso $resource não existe! <br/> Diretório procurado: $file";
-            $file = DIR_BASIC .Registered::getResourceLocation($res_dir)."/$class.php";
+            $file = Registered::getResourceLocation($res_dir, true)."/$class.php";
             if(!file_exists($file)){
                 $msg  .= "<br/> Diretório procurado: $file";
                 throw new \Exception($msg);
@@ -432,7 +432,7 @@ class Object{
         //procura o arquivo
         $this->LoadConfigFromResource($resource);
         
-        $file      = DIR_BASIC .Registered::getResourceLocation($resource)."/src/jsplugins/$modulo/$path$class.php";
+        $file      = Registered::getResourceLocation($resource, true)."/src/jsplugins/$modulo/$path$class.php";
         getTrueDir($file);
         $this->LoadFile($file);
         $this->CheckClass($class);
@@ -507,8 +507,8 @@ class Object{
     }
 
     public function LoadConfigFromResource($resource){
-        $resourceLocation = Registered::getResourceLocation($resource);
-        $autoload  = DIR_BASIC ."$resourceLocation/$resource/autoload.php";
+        $resourceLocation = Registered::getResourceLocation($resource,true);
+        $autoload  = "$resourceLocation/autoload.php";
         getTrueDir($autoload);
         if(file_exists($autoload)){require_once $autoload;}
         
@@ -517,8 +517,8 @@ class Object{
         if(in_array($resource, $loaded)) return;
         $loaded[] = $resource;
         $this->LoadAllFilesFromDir(SUBDOMAIN_RESOURCES . "/$resource");
-        $this->LoadAllFilesFromDir(DIR_BASIC."$resourceLocation/src/defines");
-        $this->LoadAllFilesFromDir(DIR_BASIC."$resourceLocation/src/interfaces");
+        $this->LoadAllFilesFromDir("$resourceLocation/src/defines");
+        $this->LoadAllFilesFromDir("$resourceLocation/src/interfaces");
     }
     
     private function LoadAllFilesFromDir($diretorio){

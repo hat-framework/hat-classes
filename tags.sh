@@ -9,5 +9,26 @@ function _rmTag(){
 	echo "---Enviando modificação Tag---"
 	git push origin :refs/tags/$1
 }
-_rmTag v0.1.8
-_rmTag v0.1.0
+
+function _fnCommit(){
+	echo "---Git ADD---"
+	git add -A
+	
+	echo "---change url---"
+	git remote set-url origin https://tigredonorte:12tm3flol@github.com/hat-framework/$1.git
+	
+	echo "---commit---"
+	git commit -m 'Repositório inicial'
+		
+	echo "---Dando push---"
+	git push --all
+	
+	echo "---Criando tag---"
+	git tag -a v0.1.1 -m "Initial"
+	
+	echo "---Dando push das tags---"
+	git push --tag
+	
+	cd ../
+}
+_fnCommit hat-classes

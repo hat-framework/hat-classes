@@ -8,7 +8,7 @@ class Registered{
     private static $resources = array();
     private static $init      = false;
     
-    public function init($registered) {
+    public static function init($registered) {
         if(empty($registered) || self::$init === true){return;}
         self::$plugins   = isset($registered['plugins'])  ?$registered['plugins']  :array();
         self::$resources = isset($registered['resources'])?$registered['resources']:array();
@@ -43,7 +43,7 @@ class Registered{
     private static function getAllLocation($array, $full_path = false){
         if(false === $full_path){return $array;}
         foreach($array as &$value){
-            $value = DIR_BASIC ."$value";
+            $value = BASE_DIR ."$value";
             getTrueDir($value);
         }
         return $array;
@@ -52,7 +52,7 @@ class Registered{
     private static function getLocation($folder, $array, $full_path = false){
         $folder = (array_key_exists($folder, $array))?$array[$folder]:"";
         if($folder === "" || false === $full_path)return $folder;
-        $folder = DIR_BASIC ."$folder";
+        $folder = BASE_DIR ."$folder";
         return getTrueDir($folder);
     }
 }
