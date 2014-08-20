@@ -435,7 +435,7 @@ class Component extends Object{
     protected function js(){
         static $js = 0;
         if($js == 1) {return;}
-        $this->Html->LoadJs(URL .'/static/js/lib/component/usability');
+        $this->Html->LoadJs(URL_JS .'/lib/component/usability');
         $js = 1;
     }
     
