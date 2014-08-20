@@ -148,7 +148,9 @@ class fileSaver{
     
     public function getFileName($cache_name){
         $file = str_replace($this->file_dir, '', "$cache_name.$this->ext");
-        return $this->file_dir . $file;
+        $f    = $this->file_dir . $file;
+        getTrueDir($f);
+        return $f;
     }
     
     public function append($cache_name, $conteudo){
