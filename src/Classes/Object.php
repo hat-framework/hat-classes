@@ -212,7 +212,7 @@ class Object{
         $path   = ($path == "")? "": $path . "/";
 
         //procura o arquivo
-        $folder = Registered::getPluginLocation($plugin)."/$modulo/classes/$path$file.php";
+        $folder = Registered::getPluginLocation($plugin, true)."/$modulo/classes/$path$file.php";
         if(!file_exists($folder)){
             if(!$throws){
                 $cache[$modelname] = null;
@@ -264,10 +264,16 @@ class Object{
         $path   = implode("/", $model);
         $path   = ($path == "")? "": $path . "/";
         
-        $folder = Registered::getPluginLocation($plugin) . "/$modulo/classes/$path$class.php";
+        $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/classes/$path$class.php";
         if(!file_exists($folder)){
             //echo "Arquivo $folder não encontrado!<br/>";
-            if($throws) throw new \Exception("O arquivo da classe ($class) não foi encontrada ou não existe");
+            if($throws) {
+                $msg = "O arquivo da classe ($class) não foi encontrada ou não existe";
+                //if(usuario_loginModel::IsWebmaster()){
+                    $msg .= "- Pasta Procurada: $folder";
+                //}
+                throw new \Exception($msg);
+            }
             $this->$name = NULL;
             return;
         }

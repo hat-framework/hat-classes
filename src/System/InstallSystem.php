@@ -11,7 +11,7 @@ class InstallSystem extends System {
     protected $template;
     
     public function __construct() {
-        
+        $this->LoadModel('usuario/login', 'uobj');
         if(isset($_REQUEST['autoinsert'])){
             require_once DIR_BASIC."/admin/installation.php";
         }
