@@ -40,11 +40,10 @@ class GUI{
         if($item != "") echo "$item";
     }
     
-    public function image($image, $class){
+    public function image($image, $class, $extra = ''){
         if($image == "") return;
-        
         if(strstr($image, 'http:')){
-            echo "imagem!";
+            echo "<img src='$image' class='$class' $extra/>";
         }else{
             $this->Html->LoadImage($image, $class);
         }
