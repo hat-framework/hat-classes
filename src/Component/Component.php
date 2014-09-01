@@ -452,17 +452,20 @@ class Component extends Object{
         $obj = new Object();
         $html = $obj->LoadResource('html', 'html');
         $v    = "";
-        $var = "<div class='breadscrum breadcrumb'>";
+        $var = "<ul class='breadcrumb'>";
         foreach($show_links as $label => $url){
-            $var .= "<div class='breadscrumitem' style='float:left;'>$v";
+            $var .= "<li class='breadcrumb_item'>$v";
                 if($url != CURRENT_URL){
                     $var .= ($url == "")?$label:"<a href='".$html->getLink($url)."'>$label</a>";
                 }else $var .= "$label";
                 
-            $var .= "</div>";
-            $v = ' <span class="divider">/</span>';
+            $var .= "</li>";
+            //pogs...
+            if(CURRENT_TEMPLATE === 'rf'){
+                $v = '<span class="divider">/</span>';
+            }
         }
-        $var .= "</div>";
+        $var .= "</ul>";
         if($print) echo $var;
         return $var;
     }
