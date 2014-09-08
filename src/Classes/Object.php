@@ -418,7 +418,7 @@ class Object{
     * @return não retorna nada
     */
     public function LoadJsPlugin($plugin, $name, $scripts = true){
-        
+
         static $cache = array();
         if(array_key_exists($plugin, $cache)){
             $this->$name = $cache[$plugin];
@@ -432,16 +432,31 @@ class Object{
         $modulo   = array_shift($plugin);
         $class    = array_pop($plugin);
         $class    = (($class == "")?$modulo:$class)."Js";
-        $path     = implode("/", $plugin);
-        $path     = ($path == "")? "": $path . "/";
         
         //procura o arquivo
         $this->LoadConfigFromResource($resource);
         
-        $file      = Registered::getResourceLocation($resource, true)."/src/jsplugins/$modulo/$path$class.php";
-        getTrueDir($file);
-        $this->LoadFile($file);
-        $this->CheckClass($class);
+        $loaded = false;
+        if(defined('CURRENT_TEMPLATE')){
+            $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true)."/hat/jsplugins/{$pvar}Js.php";
+            getTrueDir($file);
+            if(file_exists($file)){
+                require_once $file;
+                if(class_exists($class, false)){
+                    $loaded = true;
+                }
+            }
+        }
+        
+        if(false === $loaded){
+            $path     = implode("/", $plugin);
+            $path     = ($path == "")? "": $path . "/";
+
+            $file      = Registered::getResourceLocation($resource, true)."/src/jsplugins/$modulo/$path$class.php";
+            getTrueDir($file);
+            $this->LoadFile($file);
+            $this->CheckClass($class);
+        }
         
         $obj = call_user_func("$class::getInstanceOf", $pvar);
         if(!is_object($obj)) 

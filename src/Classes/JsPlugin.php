@@ -36,6 +36,15 @@ abstract class JsPlugin extends Object{
         $this->Html->LoadJQuery();
         $this->init();
     }
+    
+    
+    
+    private static $jsplugin_instances = array();
+    public static function getInstanceOf($plugin){
+        $class_name = self::whoAmI();
+        if (!isset(self::$jsplugin_instances[$class_name])){self::$jsplugin_instances[$class_name] = new $class_name($plugin); }
+        return self::$jsplugin_instances[$class_name];
+    }
         
     abstract function init();
 }
