@@ -945,66 +945,23 @@ class Model extends Object
     }
     
     public function importDataFromArray($dados, $insertIgnore = false){
-        if(empty($dados)){
-            $this->setAlertMessage("Dados a serem importados estão vazios");
-            return true;
-        }
-        $keys   = array_keys($dados[key($dados)]);
-        $cols   = implode(",",$keys);
-        $fn     = $this->getImportationCallback();
-        $dados  = array_values($dados);
-        $page   = -1; 
-        $max    = (int)count($dados);
-        $len    = 2000;
-        $ttpags = ceil($max/$len);
-        $update = $this->getOnUpdateStatement($keys);
-        while($ttpags > $page++){
-            $init   = $page*$len;
-            $val    = array_slice($dados, $init, $len);
-            array_walk($val,$fn, array('dados' =>$this->dados, 'total' => count($keys)));
-            if(empty($val)){continue;}
-            $values = implode(",\n", $val);
-            $SQL = ($insertIgnore)?
-                    "insert ignore into $this->tabela  ($cols) values \n $values \n":
-                    "insert into $this->tabela  ($cols) values \n $values \n on duplicate key update $update";
-            if($this->db->ExecuteInsertionQuery($SQL) === false){
-                $this->setErrorMessage($this->db->getErrorMessage());
-                return false;
-            }
+        $callback = $this->getImportationCallback();
+        $dados    = $this->getImportationCallbackData();
+        if(false === $this->db->importDataFromArray($dados, $this->tabela, $callback, $insertIgnore, $dados)){
+            return $this->setErrorMessage($this->db->getErrorMessage());
         }
         return true;
     }
     
-    private function getOnUpdateStatement($keys){
-        $out = array();
-        foreach($keys as &$k){
-            $out[] = "$k=values($k)";
-        }
-        return implode(",", $out);
+    protected function getImportationCallback(){
+        return null;
     }
     
-    private function getImportationCallback(){
-        return function(&$array, $key, $user_data){
-            $dados = $user_data['dados'];
-            $total = $user_data['total'];
-            $temp  = array();
-            if(count($array) != $total){
-                
-            }
-            
-            foreach($array as $nm => &$arr){
-                $arr    = str_replace(array("'"), array('"'), $arr);
-                if(trim($arr) === ""){
-                      $temp[] = (array_key_exists($nm, $dados) && isset($dados[$nm]['fkey']))?"NULL":"''";
-                }
-                elseif(is_numeric($arr)){
-                      $temp[] = $arr;
-                }else{$temp[] = "'$arr'";}
-            }
-            $array = ("(". implode(",", $temp).")");
-        };
+    protected function getImportationCallbackData(){
+        return array();
     }
-    
+
+
     protected function listImplode($array, $glue = "','"){
         if(!is_array($array)){return $array;}
         return implode("','", $array);
