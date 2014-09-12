@@ -946,8 +946,8 @@ class Model extends Object
     
     public function importDataFromArray($dados, $insertIgnore = false){
         $callback = $this->getImportationCallback();
-        $dados    = $this->getImportationCallbackData();
-        if(false === $this->db->importDataFromArray($dados, $this->tabela, $callback, $insertIgnore, $dados)){
+        $cbkdata  = $this->getImportationCallbackData();
+        if(false === $this->db->importDataFromArray($dados, $this->tabela, $callback, $insertIgnore, $cbkdata)){
             return $this->setErrorMessage($this->db->getErrorMessage());
         }
         return true;
