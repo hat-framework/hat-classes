@@ -42,4 +42,28 @@ class CSystem extends System {
         $this->plloader->setCommonVars();
         $this->setVars($this->plloader->getVars());
     }
+    
+    public function catchExcetion($code, $msg){
+        if($code == 0){$code = 500;}
+        $vars['filename'] = $this->findFile($code);
+        $vars['erro']     = "$code $msg";
+        $view = new \classes\Classes\View();
+        $view->registerVars($vars);
+        $view->execute('admin/exception/index');
+        try{
+            \classes\Utils\Log::save("Sytem/Exception", $_SERVER['REQUEST_URI']." - $code - $msg");
+            \usuario_loginModel::user_action_log('exception', "erro:$code  msg:$msg");
+        }catch (Exception $ee){
+            die("Falha catastrófica! O sistema tentou recuperar de um erro $code e não conseguiu!");
+        }
+    }
+    
+    private function findFile($code){
+        $location = "exceptions".DS."e$code.php";
+        $file = \classes\Classes\Registered::getTemplateLocation(CURRENT_TEMPLATE, true).DS.$location;
+        if(file_exists($file)){return $file;}
+        
+        $file = \classes\Classes\Registered::getTemplateLocation('core', true).DS.$location;
+        return(file_exists($file))?$file:'';
+    }
 }

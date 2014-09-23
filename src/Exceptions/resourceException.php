@@ -8,4 +8,3 @@ class resourceException extends \Exception{
         parent::__construct($message, 404);
     }
 }
-?>

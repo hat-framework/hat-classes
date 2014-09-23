@@ -155,3 +155,16 @@ function sendEmailToWebmasters($assunto, $msg){
             ."<h2>$assunto</h2><div class='msg'><p>$msg</p></div></div><hr/>");
     }
 }
+
+function genericException($erro, $msg){
+    echo "<div style='border 1px solid gray; color red;'>
+            <span>Código de Erro: </span>
+            <br/> $erro <br/><br/>
+            <span>Mensagem:</span>
+            <br/> $msg 
+          </div> ";
+    try{
+        usuario_loginModel::user_action_log('exception', "erro:$erro  msg:$msg");
+        \classes\Utils\Log::save("Sytem/Catastrophic", "$erro - $msg");
+    }catch (Exception $ee){}
+}
