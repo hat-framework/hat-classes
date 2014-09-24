@@ -23,7 +23,7 @@
         
         if($page == "") SRedirect(URL, $time); //return;
         $amigavel  = (is_amigavel)?($args == "")?"":"index.php?url=":"index.php?url=";
-        $url       = URL.$after.$amigavel.$page.$args;
+        $url       = URL.$after.$amigavel.$page.$args.getSystemParams();
         SRedirect($url, $time, $dados);
         
     }
@@ -167,4 +167,18 @@ function genericException($erro, $msg){
         usuario_loginModel::user_action_log('exception', "erro:$erro  msg:$msg");
         \classes\Utils\Log::save("Sytem/Catastrophic", "$erro - $msg");
     }catch (Exception $ee){}
+}
+
+function getSystemParams(){
+    $get = $_GET;
+    static $append = ""; static $checked = false;
+    if(!empty($get) && false === $checked){
+        $checked = true;
+        foreach($get as $name => $val){
+            if(substr($name, 0,1) === "_"){
+                $append = "&$name=$val";
+            }
+        }
+    }
+    return $append;
 }
