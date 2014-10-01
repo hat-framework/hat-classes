@@ -255,7 +255,6 @@ class Component extends Object{
             $url   = "$action/$pkey";
         }
         return $this->Html->getActionLinkIfHasPermission($url, "$name",$class, "");
-        if($link != "") $v[$name] = $link;
     }
     
     protected function gerarLink($model, $pkey, $item){

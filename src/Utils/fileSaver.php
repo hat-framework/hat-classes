@@ -43,7 +43,8 @@ class fileSaver{
      * @param string $cache_name
      * @return boolean true caso exista, false caso contrário
      */
-    public function exists($cache_name){
+    public function exists($cache_name, $ext = ""){
+        $this->setFileExtension($ext);
         $file = $this->getFileName($cache_name);
         if($this->expires === ""){
 //            if(file_exists($file) === false){return false;}
@@ -96,7 +97,8 @@ class fileSaver{
      * @param string $cache_name
      * @return boolean true se apagar o cache, false caso contrário
      */
-    public function delete($cache_name){
+    public function delete($cache_name, $ext = ""){
+        $this->setFileExtension($ext);
         $file = $this->getFileName($cache_name);
         if(!$this->LoadResource('files/dir')->removeFile($file)){
             $this->error = $this->LoadResource('files/dir')->getErrorMessage();
@@ -110,7 +112,8 @@ class fileSaver{
      * @param string $cache_name Nome do cache a ser recuperado
      * @return mixed false se o cache não existir, str se o cache existe
      */
-    public function get($cache_name){
+    public function get($cache_name, $ext = ""){
+        $this->setFileExtension($ext);
         $file = $this->getFileName($cache_name);
         try{
             if($this->encrypt){

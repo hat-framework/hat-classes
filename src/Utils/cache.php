@@ -20,14 +20,14 @@ class cache{
         $obj->setExpirationTime($extension);
     }
     
-    public static function get($cache_name) {
+    public static function get($cache_name, $ext = "") {
         $obj = fileSaver::LoadFileSaver(self::$file_dir, false);
-        return $obj->get($cache_name);
+        return $obj->get($cache_name, $ext);
     }
     
-    public static function delete($cache_name) {
+    public static function delete($cache_name, $ext = "") {
         $obj = fileSaver::LoadFileSaver(self::$file_dir, false);
-        return $obj->delete($cache_name);
+        return $obj->delete($cache_name, $ext);
     }
     
     public static function deleteFolder($folder_name) {
@@ -40,14 +40,14 @@ class cache{
         return $obj->create($cache_name, $conteudo, $ext);
     }
     
-    public static function append($cache_name, $conteudo) {
+    public static function append($cache_name, $conteudo, $ext = "") {
         $obj = fileSaver::LoadFileSaver(self::$file_dir, false);
-        return $obj->append($cache_name, $conteudo);
+        return $obj->append($cache_name, $conteudo, $ext);
     }
     
-    public static function exists($cache_name){
+    public static function exists($cache_name, $ext = ""){
         $obj = fileSaver::LoadFileSaver(self::$file_dir, false);
-        return $obj->exists($cache_name);
+        return $obj->exists($cache_name, $ext);
     }
     
 }
