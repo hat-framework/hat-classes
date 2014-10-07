@@ -29,8 +29,8 @@ class fileSaver{
     }
     
     public function setFileExtension($ext){
-        $ext = ($ext == "")?"html":$ext;
-        $this->ext = "$ext";
+        $default   = ($this->ext !== "")?$this->ext:"html";
+        $this->ext = ($ext == "")?$default:$ext;
     }
     
     public function __construct($path, $encrypt) {
