@@ -181,5 +181,21 @@ class Template extends Object{
         $menu_obj->setCommonVars();
         return($menu_obj->getVars());
     }
+    
+    private static $template_classes = null;
+    public static function getClass($name){
+        if(is_array(self::$template_classes) && empty(self::$template_classes)){return "";}
+        if(self::$template_classes === null){
+            $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true);
+            $file.= "/hat/classes.php";
+            getTrueDir($file);
+            if(!file_exists($file)){
+                self::$template_classes = array();
+                return "";
+            }
+            self::$template_classes = include $file;
+        }
+        return(isset(self::$template_classes[$name])?self::$template_classes[$name]:'');
+    }
 
 }
