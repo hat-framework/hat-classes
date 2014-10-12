@@ -460,9 +460,6 @@ class Component extends Object{
                 
             $var .= "</li>";
             //pogs...
-            if(CURRENT_TEMPLATE === 'rf'){
-                $v = '<span class="divider">/</span>';
-            }
         }
         $var .= "</ul>";
         if($print) echo $var;
