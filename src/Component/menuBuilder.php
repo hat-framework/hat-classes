@@ -35,6 +35,7 @@ class menuBuilder{
         foreach( $menuTotal[$idPai] as $idMenu => $menuItem){
             $saida[$menuItem['name']][$menuItem['name']] = $menuItem['link'];
             $saida[$menuItem['name']]['__id']            = $menuItem['__id'];
+            if(isset($menuItem['__icon'])){$saida[$menuItem['name']]['__icon'] = $menuItem['__icon'];}
             if(isset( $menuTotal[$idMenu] ) ){
                 $this->geraMenuInfinito( $menuTotal ,$saida[$menuItem['name']],  $idMenu , $niveis, $nivel+1);
             }
@@ -52,9 +53,11 @@ class menuBuilder{
                 'name' => $arr['menu'],
                 '__id' => $arr[$this->id]
             );
+            
+            if(isset($arr['icon']) && trim($arr['icon']) !== ""){
+                $menu[$arr[$this->nome_pai]][$arr[$this->id]]['__icon'] = $arr['icon'];
+            }
         }
         return $menu;
     }
 }
-
-?>

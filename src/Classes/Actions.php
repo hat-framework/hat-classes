@@ -28,5 +28,3 @@ class Actions extends Object{
         return $this->perfis;
     }
 }
-
-?>
