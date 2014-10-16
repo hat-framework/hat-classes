@@ -85,7 +85,7 @@ class widget extends \classes\Classes\Object{
     private function drawDropper(){
         if($this->cachename === "" || !\usuario_loginModel::IsWebmaster()) return;
         $url = URL. "index.php?url=site/index/cache&file={$this->cachename}.html&action=drop";
-        echo "<a href='$url' target='_BLANK' class='pull-right' style='position:relative'><i class='icon-trash'></i></a>";
+        echo "<a href='$url' target='_BLANK' class='pull-right' style='position:relative'><i class='fa fa-trash-o'></i></a>";
     }
     
     private function drawCache(){
