@@ -13,7 +13,7 @@ class widget extends \classes\Classes\Object{
     protected $page      = 0;
     protected $order     = "";
     protected $title     = "";
-    protected $class     = "span12";
+    protected $class     = "col-xs-12";
     protected $id        = "";
     protected $component = null;
     protected $model     = null;

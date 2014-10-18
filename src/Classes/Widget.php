@@ -12,7 +12,7 @@ class Widget extends Object{
     public static function setWidget($name, $config = array()){
         $var          = GetPlainName($name);
         $method       = "Listar";
-        $class        = "widget_right span7";
+        $class        = "widget_right col-xs-7";
         $model_method = 'paginate';
         $filther      = array();
         $title        = ucfirst($name);
