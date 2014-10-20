@@ -217,6 +217,7 @@ class widget extends \classes\Classes\Object{
         $obj = new \classes\Classes\Object();
         foreach($widgets as $classname => $options){
             $widget = $obj->LoadClassFromPlugin($classname, 'prod', false);
+            if(!is_object($widget)){continue;}
             if(!empty($options)){
                 foreach($options as $method => $setvalue){
                     if(!method_exists($widget, $method)){
