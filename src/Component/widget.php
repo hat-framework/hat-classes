@@ -90,8 +90,9 @@ class widget extends \classes\Classes\Object{
     
     private function drawCache(){
         if($this->cachename == "") return false;
-        if(\classes\Utils\cache::exists($this->cachename)){
-            echo \classes\Utils\cache::get($this->cachename);
+        \classes\Utils\cache::setFileExtension('html');
+        if(\classes\Utils\cache::exists($this->cachename, 'html')){
+            echo \classes\Utils\cache::get($this->cachename, 'html');
             return true;
         }
         $itens = $this->getItens();
@@ -100,7 +101,7 @@ class widget extends \classes\Classes\Object{
         $flush = ob_get_contents();
         ob_end_clean();
         if(trim($flush) == "") return true;
-        \classes\Utils\cache::create($this->cachename, $flush);
+        \classes\Utils\cache::create($this->cachename, $flush, 'html');
         echo $flush;
         return true;
     }
