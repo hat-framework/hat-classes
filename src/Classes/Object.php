@@ -266,7 +266,6 @@ class Object{
         
         $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/classes/$path$class.php";
         if(!file_exists($folder)){
-            //echo "Arquivo $folder não encontrado!<br/>";
             if($throws) {
                 $msg = "O arquivo da classe ($class) não foi encontrada ou não existe";
                 //if(usuario_loginModel::IsWebmaster()){
@@ -281,15 +280,7 @@ class Object{
         $this->LoadConfigFromPlugin($plugin);
         require_once $folder;
 
-        if(!class_exists($class)){
-            $class = "{$plugin}_{$class}";
-            if(!class_exists($class)){
-                if($throws) throw new \Exception("A classe ($class) não foi encontrado ou não existe");
-                $this->$name = NULL;
-                return;
-            }
-            
-        }
+        if(false === $this->verifyClass($class,$ClassName, $plugin, $throws)){return false;}
         
         $this->$name = new $class($vars);
         if(!is_object($this->$name)){
@@ -297,6 +288,26 @@ class Object{
             $this->$name = NULL;
         }
         return $this->$name;
+    }
+    
+    private function verifyClass(&$class,$ClassName, $plugin, $throws){
+        if(class_exists($class)){return true;}
+        
+        $cls = "{$plugin}_{$class}";
+        if(class_exists($cls)){
+            $class = $cls; 
+            return true;
+        }
+        
+        $ClassName = str_replace("/", '\\', $ClassName);
+        $cls = "plugins\\$ClassName";
+        if(class_exists($cls)){
+            $class = $cls; 
+            return true;
+        }
+        if($throws) throw new \Exception("A classe ($class) não foi encontrado ou não existe");
+        $this->$name = NULL;
+        return;
     }
     
     /**
