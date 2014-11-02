@@ -1,6 +1,9 @@
 <?php
 namespace classes\Component;
-class GUI{
+class GUI extends \classes\Classes\Object{
+    public $description = '';
+    public $icon = '';
+    
     public function title($title){
         if($title != "") echo "<h1 class='title'>$title</h1>";
     }
@@ -9,6 +12,26 @@ class GUI{
         if($title != "") echo "<h2 class='subtitle'>$title</h2>";
     }
     
+    public function panelSubtitle($title) {
+        if ($title == "")
+            return;
+        $var = '';
+        $var.= "<div class='panel-heading'>";
+            $var.="<h3 class='panel-title'>";
+             if ($this->icon != '')
+            $var.= "<i class='fa $this->icon'></i>";
+        if ($this->description != '') {
+            $var.= "<div class='pull-right'>";
+            $this->LoadResource('js/tooltip', 'tool');
+            $this->tool->setPlacement('left');
+            $var.= $this->tool->iconTool($this->description);
+            $var.= "</div>";
+        }
+         $var.="$title</h3>";
+        $var.= "</div>";
+        echo $var;
+    }
+
     public function infotitle($title){
         if($title != "") echo "<h4 class='infotitle'>$title</h4>";
     }
@@ -90,5 +113,15 @@ class GUI{
     
     public function line(){
         echo "<br/>";
+    }
+    
+     public function setDescription($description){
+        $this->description = $description;
+        return $this;
+    }
+    
+     public function setIcon($icon){
+        $this->icon = $icon;
+        return $this;
     }
 }

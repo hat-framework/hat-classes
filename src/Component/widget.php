@@ -22,6 +22,10 @@ class widget extends \classes\Classes\Object{
     protected $countTitle = "Total";
     protected $drawEmpty = true;
     protected $cachename = "";
+    protected $icon = '';
+    protected $widget = false;
+    protected $panel = 'panel-default';
+    protected $description = '';
 
     protected $gui = null;
     public function __construct() {
@@ -108,7 +112,8 @@ class widget extends \classes\Classes\Object{
     
     protected function draw($itens){
         if(empty($itens) && !$this->drawEmpty) return '';
-        $this->openWidget();
+        if($this->widget === false)$this->openPanel();
+        else $this->openWidget();
             if($this->showCount){
                 $this->LoadResource("html/paginator", 'pag');
                 echo "$this->countTitle: ". $this->pag->getLastCount() . "<br/>";
@@ -213,6 +218,26 @@ class widget extends \classes\Classes\Object{
         return $this;
     }
     
+     public function setPanel($panel){
+        $this->panel = $panel;
+        return $this;
+    }
+    
+     public function setIcon($icon){
+        $this->icon = $icon;
+        return $this;
+    }
+    
+    public function setWidget($widget){
+        $this->widget = $widget;
+        return $this;
+    }
+    
+    public function setDescription($description){
+        $this->description = $description;
+        return $this;
+    }
+    
     public static function executeWidgets($widgets){
         if(empty($widgets)) return;
         $obj = new \classes\Classes\Object();
@@ -241,6 +266,18 @@ class widget extends \classes\Classes\Object{
                 echo $adicional_title;
             echo $this->getLinks();
             $this->gui->opendiv('', "widget_content");
+    }
+    
+     public function openPanel($id = "", $adicional_title = ''){
+        $class = "widget_".  GetPlainName(self::whoAmI());
+        if($id == "") {$id = ($this->id == "")?$class:$this->id;}
+        $this->gui->opendiv($id, "$this->class $class panel $this->panel");
+                $this->gui->setDescription($this->description);
+                $this->gui->setIcon($this->icon);
+                $this->gui->panelSubtitle($this->title);
+                echo $adicional_title;
+            echo $this->getLinks();
+            $this->gui->opendiv('', "panel-body");
     }
     
     public function closeWidget(){
