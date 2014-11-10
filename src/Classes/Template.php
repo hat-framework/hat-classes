@@ -182,9 +182,14 @@ class Template extends Object{
         return($menu_obj->getVars());
     }
     
-    private static $template_classes = array();
+    private static $loaded_classes = false;
+    private static $template_classes = null;
     public static function getClass($name){
-        if(isset(self::$template_classes[$name])){return self::$template_classes[$name];}
+        if(self::$loaded_classes === true){
+            return isset(self::$template_classes[$name])?self::$template_classes[$name]:"";
+        }
+        self::$template_classes = array();
+        self::$loaded_classes = true;
         $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true);
         $file.= "/hat/classes.php";
         getTrueDir($file);
@@ -192,7 +197,7 @@ class Template extends Object{
             self::$template_classes[$name] = '';
             return "";
         }
-        self::$template_classes[$name] = include $file;
+        self::$template_classes = include $file;
         return self::$template_classes[$name];
     }
 
