@@ -198,7 +198,7 @@ class Template extends Object{
             return "";
         }
         self::$template_classes = include $file;
-        return self::$template_classes[$name];
+        return isset(self::$template_classes[$name])?self::$template_classes[$name]:"";
     }
 
 }
