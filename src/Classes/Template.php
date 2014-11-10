@@ -182,20 +182,18 @@ class Template extends Object{
         return($menu_obj->getVars());
     }
     
-    private static $template_classes = null;
+    private static $template_classes = array();
     public static function getClass($name){
-        if(is_array(self::$template_classes) && empty(self::$template_classes)){return "";}
-        if(self::$template_classes === null){
-            $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true);
-            $file.= "/hat/classes.php";
-            getTrueDir($file);
-            if(!file_exists($file)){
-                self::$template_classes = array();
-                return "";
-            }
-            self::$template_classes = include $file;
+        if(isset(self::$template_classes[$name])){return self::$template_classes[$name];}
+        $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true);
+        $file.= "/hat/classes.php";
+        getTrueDir($file);
+        if(!file_exists($file)){
+            self::$template_classes[$name] = '';
+            return "";
         }
-        return(isset(self::$template_classes[$name])?self::$template_classes[$name]:'');
+        self::$template_classes[$name] = include $file;
+        return self::$template_classes[$name];
     }
 
 }
