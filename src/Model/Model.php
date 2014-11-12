@@ -698,7 +698,7 @@ class Model extends Object
         $this->post = $post;
         $this->LoadResource("formulario/validator", "pval");
         if(!$this->pval->validate($this->dados, $this->post)){
-            $this->setMessage('validation', $this->pval->getMessages());
+            $this->setSimpleMessage('validation', $this->pval->getMessages());
             $e    = $this->getMessages();
             $erro = (isset($e['validation']['erro'])?$e['validation']['erro']: "Erro ao validar os dados a serem inseridos");
             $this->setErrorMessage($erro);
