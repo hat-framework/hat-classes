@@ -12,6 +12,7 @@ class showItemComponent extends Object{
     public function __construct($component) {
         $this->component = $component;
         $this->sfk = new \classes\FK\ShowFk();
+        $this->gui = new GUI();
     }
     
     public function setAppendName($append_name){
