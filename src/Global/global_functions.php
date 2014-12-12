@@ -16,17 +16,45 @@
     }
 
     function Redirect($page, $time = 0, $args = "", $dados = array()){
-        if(!is_numeric($time)) $time = 0;
-        $after = "";
-        if($args == "") $after = (is_admin)?"admin/":"";
-        else $args = "&$args";
-        
-        if($page == "") SRedirect(URL, $time); //return;
-        $amigavel  = (is_amigavel)?($args == "")?"":"index.php?url=":"index.php?url=";
-        $url       = URL.$after.$amigavel.$page.$args.getSystemParams();
+        $url = $page;
+        if(strstr($page, 'http://') === false && strstr($page, 'https://') === false){
+            if(!is_numeric($time)) $time = 0;
+            $after = "";
+            if($args == "") $after = (is_admin)?"admin/":"";
+            else $args = "&$args";
+
+            if($page == "") SRedirect(URL, $time); //return;
+            $amigavel  = (is_amigavel)?($args == "")?"":"index.php?url=":"index.php?url=";
+            $params    = getSystemParams();
+            $url       = setGetParams(URL.$after.$amigavel.$page.$args.$params);
+        }
         SRedirect($url, $time, $dados);
-        
     }
+    
+    function setGetParams($url, $getarray = false){
+        $e         = explode("&", $url);
+        $str       = array_shift($e);
+        $out       = array();
+        foreach($e as $ee){
+            $temp      = explode('=',$ee);
+            $key       = array_shift($temp);
+            if(isset($out[$key])){continue;}
+            $out[$key] = implode("=", $temp);
+            $str      .= "&$key=".implode("=", $temp);
+        }
+        return $getarray?$out:$str;
+    }
+    /**
+     * 
+     http://hat/config/group/request/pessoal/pessoal_address/form
+     * &_redirect=config/group/request/pessoal/pessoal_email/form
+     * &_index=2
+     * &_request=cGVzc29hbF9waG9uZS1wZXNzb2FsX2FkZHJlc3MtcGVzc29hbF9lbWFpbA==
+     * &_redirect=config/group/request/pessoal/pessoal_address
+     * &_index=1
+     * &_request=cGVzc29hbF9waG9uZS1wZXNzb2FsX2FkZHJlc3MtcGVzc29hbF9lbWFpbA==
+     * &_credirect=Y29uZmlnL2luZGV4L3JlcXVlc3Qv
+     */
 
     //redirecionamento simples
     function SRedirect($url, $time = 0, $dados = array()){
@@ -176,7 +204,7 @@ function getSystemParams(){
         $checked = true;
         foreach($get as $name => $val){
             if(substr($name, 0,1) === "_"){
-                $append = "&$name=$val";
+                $append .= "&$name=$val";
             }
         }
     }
