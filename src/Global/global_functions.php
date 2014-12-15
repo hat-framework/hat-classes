@@ -15,7 +15,7 @@
             define($constant, $valor);
     }
 
-    function Redirect($page, $time = 0, $args = "", $dados = array()){
+    function Redirect($page, $time = 0, $args = "", $dados = array(), $ignoreParams = false){
         $url = $page;
         if(strstr($page, 'http://') === false && strstr($page, 'https://') === false){
             if(!is_numeric($time)) $time = 0;
@@ -25,7 +25,7 @@
 
             if($page == "") SRedirect(URL, $time); //return;
             $amigavel  = (is_amigavel)?($args == "")?"":"index.php?url=":"index.php?url=";
-            $params    = getSystemParams();
+            $params    = ($ignoreParams === true)?"":getSystemParams();
             $url       = setGetParams(URL.$after.$amigavel.$page.$args.$params);
         }
         SRedirect($url, $time, $dados);
