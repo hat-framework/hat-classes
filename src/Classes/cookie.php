@@ -75,6 +75,7 @@ class cookie{
     
     private static function setCookie($name, $value, $time = ""){
         if(!is_numeric($time) || $time <= 0){$time = 86400 * 365;}
+        $name = urlencode($name);
         setcookie ($name, $value, time()+$time, "/");
         $_COOKIE[$name] = $value;
     }
