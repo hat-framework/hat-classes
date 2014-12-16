@@ -1,7 +1,7 @@
 <?php
 
 namespace classes\Controller;
-use classes\Classes\cookie;
+use classes\Classes\session;
 class TController extends CController {
 
     public    $model_name = "";    
@@ -48,15 +48,10 @@ class TController extends CController {
         }
 
         $this->registerVar("item", $this->item);
-        if(cookie::cookieExists($this->sess_cont_alerts)){
-            $this->setVars(cookie::getVar($this->sess_cont_alerts));
-            cookie::destroy($this->sess_cont_alerts);
+        if(session::exists($this->sess_cont_alerts)){
+            $this->setVars(session::getVar($this->sess_cont_alerts));
+            session::destroy($this->sess_cont_alerts);
         }
     }
-    /*
-    public function formulario($display = true, $link = "") {
-        parent::formulario(false);
-        parent::show();
-    }*/
 
 }

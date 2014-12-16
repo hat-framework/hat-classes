@@ -1,83 +1,85 @@
 <?php
 
 namespace classes\Classes;
-use classes\Classes\cookie;
 class cookie{
-    
-    /**
-    * @uses Contém a instância do banco de dados
-    */
-    private static $cookiename = "cookie_resource";
-    private static $cookiearr = "cres";
-    private static $cookiecache = array();
-    
+
     public static function create($cookiename, $time = 0){
-        $cookiename =  \classes\Classes\crypt::encrypt($cookiename);
-        $_SESSION[cookie::$cookiearr][$cookiename] = "";
-        if($time > 0){
-            cookie::create(cookie::$cookiename, 0);
-            $var = $this->getVar(cookie::$cookiename);
-            $var[$cookiename]['time'] = $time;
-            $var[$cookiename]['date'] = new DateTime();
-            cookie::setVar(cookie::$cookiename, $var);
-        }
+        $ckname = self::getCookieName($cookiename);
+        self::setCookie($ckname, '');
     }
     
     public static function destroy($cookiename){
-        if(!cookie::cookieExists($cookiename)) return true;
-        $enc_cookiename =  \classes\Classes\crypt::encrypt($cookiename);
-        unset($_SESSION[cookie::$cookiearr][$enc_cookiename]);
-        unset(cookie::$cookiecache[$enc_cookiename]);
-        return cookie::cookieExists($cookiename);
+        if(!self::exists($cookiename)) return true;
+        $ckname =  self::getCookieName($cookiename);
+        self::setCookie($ckname, '', -3600);
+        if(isset($_COOKIE[$ckname])){unset($_COOKIE[$ckname]);}
+        return self::exists($cookiename);
     }
     
     public static function destroyALL(){
-        $_SESSION[cookie::$cookiearr] = array();
-        cookie::$cookiecache = array();
+        // unset cookies
+        if (isset($_SERVER['HTTP_COOKIE'])) {
+            $cookies = explode(';', $_SERVER['HTTP_COOKIE']);
+            foreach($cookies as $cookie) {
+                $parts = explode('=', $cookie);
+                $name = trim($parts[0]);
+                self::setCookie($name, '', -3600);
+            }
+        }
+        
+        //garantindo que os cookies serão destruídos
+        $cookiess = $_COOKIE;
+        if(is_array($cookiess)){
+            foreach ($cookiess  as $key => $value ){
+                self::destroy($key);
+            }
+        }
+        $_COOKIE = array();
         return true;
     }
     
-    public static function cookieExists($cookiename){
-        $cookiename =  \classes\Classes\crypt::encrypt($cookiename);
-        if(!isset($_SESSION[cookie::$cookiearr])) $_SESSION[cookie::$cookiearr]= array();
-        return(array_key_exists($cookiename, $_SESSION[cookie::$cookiearr]));
+    public static function exists($cookiename){
+        $ckname = self::getCookieName($cookiename);
+        if(isset($_COOKIE[$ckname])){return true;}
+        return(isset($_COOKIE[$cookiename]));
     }
     
     public static function setVar($cookiename, $value){
-        if(!cookie::cookieExists($cookiename))
-            cookie::create($cookiename);
-        $cookiename =  \classes\Classes\crypt::encrypt($cookiename);
-        $_SESSION[cookie::$cookiearr][$cookiename] =  \classes\Classes\crypt::encrypt(serialize($value));
-        cookie::$cookiecache[$cookiename] = $value;
+        if(!self::exists($cookiename)){self::create($cookiename);}
+        $ckname = self::getCookieName($cookiename);
+        $value  = \classes\Classes\crypt::encrypt_camp(json_encode($value));
+        self::setCookie($ckname, $value);
     }
     
     public static function getVar($cookiename){
-        if(!cookie::cookieExists($cookiename)) return "";
-        $cookiename =  \classes\Classes\crypt::encrypt($cookiename);
-        if(!isset(cookie::$cookiecache[$cookiename])){
-            cookie::$cookiecache[$cookiename] = 
-                (unserialize( \classes\Classes\crypt::decrypt($_SESSION[cookie::$cookiearr][$cookiename])));
-        }
-        return cookie::$cookiecache[$cookiename];
+        if(!self::exists($cookiename)){return "";}
+        $ckname = self::getCookieName($cookiename);
+        return(isset($_COOKIE[$ckname]))?json_decode( \classes\Classes\crypt::decrypt_camp($_COOKIE[$ckname])):$_COOKIE[$cookiename];
     }
     
     public static function debugCookies(){
-        $keys = array_keys($_SESSION['cres']);
-        foreach($keys as $name){
-            $name =  \classes\Classes\crypt::decrypt($name);
-            $var  = cookie::getVar($name);
-            echo "<hr/>$name<br/><br/>";
-            if(is_array($var)) debugarray($var);
-            elseif(!base64_decode($var)) echo $var;
-            else echo base64_decode($var);
+        if (!isset($_SERVER['HTTP_COOKIE'])) {return;}
+        $cookies = explode(';', $_SERVER['HTTP_COOKIE']);
+        foreach($cookies as $cookie) {
+            $parts = explode('=', $cookie);
+            $nm    = array_shift($parts);
+            $name  = \classes\Classes\crypt::decrypt(trim($nm));
+            $var   = self::getVar($name);
+            if(trim($var) === ""){continue;}
+            echo "<hr/><b>$name:</b><br/>";
+            if(is_array($var)) {print_rrh($var);}
+            elseif(!base64_decode($var)) {echo $var;}
+            else {echo base64_decode($var);}
         }
     }
     
-    /*retorna true caso um cookie tenha expirado*/
-    private static function cookieExpired($cookiename){
-        die("a ser implementado");
+    private static function setCookie($name, $value, $time = ""){
+        if(!is_numeric($time) || $time <= 0){$time = 86400 * 365;}
+        setcookie ($name, $value, time()+$time, "/");
+        $_COOKIE[$name] = $value;
     }
     
+    private static function getCookieName($cookiename){
+        return urldecode(\classes\Classes\crypt::encrypt_camp($cookiename));
+    }
 }
-
-?>

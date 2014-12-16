@@ -1,7 +1,7 @@
 <?php
 
 namespace classes\Model;
-use classes\Classes\cookie;
+use classes\Classes\session;
 use classes\Classes\Object;
 class Model extends Object
 {
@@ -236,12 +236,12 @@ class Model extends Object
         
         if($this->item_title == ""){
             $nm = 'title/'.$this->model_name;
-            $v  = cookie::getVar($nm);
+            $v  = session::getVar($nm);
             if($v == ""){
                 foreach($this->dados as $name => $value){
                     if(array_key_exists('title', $value)){
                         $this->item_title = $name;
-                        cookie::setVar($nm, $name);
+                        session::setVar($nm, $name);
                         break;
                     }
                 }

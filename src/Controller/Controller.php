@@ -2,7 +2,7 @@
 
 namespace classes\Controller;
 use classes\Classes\Object;
-use classes\Classes\cookie;
+use classes\Classes\session;
 use classes\Classes\View;
 abstract class Controller extends Object {
 
@@ -139,7 +139,7 @@ abstract class Controller extends Object {
         protected final function MDRedirect($url = ""){
             $url  = ($url == "")?LINK."/show/$this->cod":$url;
             $vars = $this->getVars();
-            cookie::setVar($this->sess_cont_alerts, $vars);
+            session::setVar($this->sess_cont_alerts, $vars);
             Redirect($url, 0, "", $vars);
         }
 }

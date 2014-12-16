@@ -2,7 +2,7 @@
 
 namespace classes\Controller;
 use classes\Classes\EventTube;
-use classes\Classes\cookie;
+use classes\Classes\session;
 class CController extends \classes\Controller\Controller {
 
     /**
@@ -93,10 +93,9 @@ class CController extends \classes\Controller\Controller {
         
         if(!isset($_REQUEST['ajax'])){$this->registerVar("item", $this->item);}
         elseif(!empty ($this->item)){$this->registerVar('item', $this->item);}
-        if(cookie::cookieExists($this->sess_cont_alerts)){
-            //print_r(cookie::getVar($this->sess_cont_alerts));die();
-            $this->setVars(cookie::getVar($this->sess_cont_alerts));
-            cookie::destroy($this->sess_cont_alerts);
+        if(session::exists($this->sess_cont_alerts)){
+            $this->setVars(session::getVar($this->sess_cont_alerts));
+            session::destroy($this->sess_cont_alerts);
         }
         
         $item = empty($this->item)?array():$this->item;
@@ -171,7 +170,7 @@ class CController extends \classes\Controller\Controller {
             $vars = $this->model->getMessages();
             if(empty($vars)) $vars['success'] = "Conteudo removido com sucesso!";
             
-            if(!isset($_REQUEST['ajax'])){cookie::setVar($this->sess_cont_alerts, $vars);}
+            if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $vars);}
             $vars['status'] = "1";
             $this->registerVar('status', '1');
             if(isset($_SESSION[LINK])) unset($_SESSION[LINK]);
@@ -272,7 +271,7 @@ class CController extends \classes\Controller\Controller {
             $this->setVars($vars);
             
             if($status == true && !$this->prevent_red){
-                if(!isset($_REQUEST['ajax'])){cookie::setVar($this->sess_cont_alerts, $messages);}
+                if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $messages);}
                 $id = is_array($id)?implode("/", $id):$id;
                 $page = (array_key_exists(CURRENT_ACTION, $this->redirect_link))?$this->redirect_link[CURRENT_ACTION]:LINK."/show/$id";
                 Redirect($page, 0, "", $vars);
@@ -291,7 +290,7 @@ class CController extends \classes\Controller\Controller {
     protected function redirect($page){
         $dados = $this->model->getMessages();
         foreach($this->variaveis as $name => $var) $dados[$name] = $var;
-        if(!isset($_REQUEST['ajax'])){cookie::setVar($this->sess_cont_alerts, $dados);}
+        if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $dados);}
         Redirect($page, 0, "", $dados);
     }
     

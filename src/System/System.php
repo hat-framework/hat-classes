@@ -1,7 +1,7 @@
 <?php
 
 namespace classes\System;
-use classes\Classes\cookie;
+use classes\Classes\session;
 use classes\Classes\Object;
 abstract class system extends Object {
 
@@ -157,7 +157,6 @@ abstract class system extends Object {
         $act_temp    = $action_name;
         $this->LoadModel('usuario/perfil', 'perm');
         $perm = $this->perm->hasPermission($act_temp, true, $has);
-        //cookie::debugCookies();die($perm);    
         if(!defined('PERMISSION')) define("PERMISSION", $perm);
         if($perm == 'n'){
             if($this->lobj->IsLoged()) throw new \classes\Exceptions\AcessDeniedException();
@@ -189,7 +188,7 @@ abstract class system extends Object {
     }
     
      public function setMenu(){
-        $v = cookie::getVar('system_menu_superior');
+        $v = session::getVar('system_menu_superior');
         if(\usuario_loginModel::IsWebmaster() || $v == ""){
             $this->LoadModel('site/menu', 'smenu');
             $menu = $this->smenu->getMenu();
@@ -197,7 +196,7 @@ abstract class system extends Object {
             $this->LoadJsPlugin('menu/dropdown', 'menu');
             $this->menu->imprime();
             $v = $this->menu->draw($menu, "menu");
-            cookie::setVar('system_menu_superior', $v);
+            session::setVar('system_menu_superior', $v);
         }
         
         \classes\Classes\EventTube::addEvent('menu-superior', $v);
