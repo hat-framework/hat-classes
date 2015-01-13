@@ -184,9 +184,9 @@ class Template extends Object{
     
     private static $loaded_classes = false;
     private static $template_classes = null;
-    public static function getClass($name){
+    public static function getClass($name, $default = ''){
         if(self::$loaded_classes === true){
-            return isset(self::$template_classes[$name])?self::$template_classes[$name]:"";
+            return isset(self::$template_classes[$name])?self::$template_classes[$name]:$default;
         }
         self::$template_classes = array();
         self::$loaded_classes = true;
@@ -194,11 +194,11 @@ class Template extends Object{
         $file.= "/hat/classes.php";
         getTrueDir($file);
         if(!file_exists($file)){
-            self::$template_classes[$name] = '';
-            return "";
+            self::$template_classes[$name] = $default;
+            return $default;
         }
         self::$template_classes = include $file;
-        return isset(self::$template_classes[$name])?self::$template_classes[$name]:"";
+        return isset(self::$template_classes[$name])?self::$template_classes[$name]:$default;
     }
 
 }
