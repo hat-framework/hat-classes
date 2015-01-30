@@ -33,8 +33,20 @@ abstract class Controller extends Object {
         abstract function index();
         
         //chamado antes de aplicar as regras de segurança e gerar o menu
-        public function AfterLoad(){}
+        public function AfterLoad(){
+            $this->autoLoadTags();
+        }
         
+        protected function autoLoadTags(){
+            if(!defined('CURRENT_CONTROLLER') || !defined('CURRENT_ACTION')){return;}
+            $item = empty($this->item)?array():$this->item;
+            $class = CURRENT_MODULE . "/" . CURRENT_CONTROLLER. "/".CURRENT_CONTROLLER. "Tag";
+            $this->LoadClassFromPlugin($class, 'tag', false);
+            if($this->tag == null) {return;}
+            $this->setTags($this->tag->getTagsOfPage(CURRENT_ACTION, $item));
+        }
+
+
         //chamado depois de carregar o menu e a segurança mas antes de executar a ação
         public function BeforeLoad(){}
         

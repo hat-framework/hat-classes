@@ -98,9 +98,7 @@ class CController extends \classes\Controller\Controller {
             session::destroy($this->sess_cont_alerts);
         }
         
-        $item = empty($this->item)?array():$this->item;
-        $this->LoadClassFromPlugin($this->model_name . "/" . CURRENT_CONTROLLER . "Tag", 'tag', false);
-        if($this->tag != null) {$this->setTags($this->tag->getTagsOfPage(CURRENT_ACTION, $item));}
+        parent::AfterLoad();
         
         $this->LoadApps();
     }
