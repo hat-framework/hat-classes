@@ -36,9 +36,11 @@ class Model extends Object
         $this->LoadResource("database", "db", false);
     }
     
-    public function  restrictByAutor($camp, $value){
+    public function setRestriction($camp, $value, $op = '='){
+        if($camp === ""){return;}
         if(!isset($this->dados[$camp])){return;}
-        $this->resticted_where = "$camp='$value'";
+        if(!isset($this->resticted_where[$camp])){$this->resticted_where[$camp] = array();}
+        $this->resticted_where[$camp][] = array($value, $op);
     }
     
     public function restoreSession($item){
@@ -101,23 +103,27 @@ class Model extends Object
                 return $sentencas[$cachevar];
             }
         }
-        if($orderby == "" && (array_key_exists("ordem", $this->dados)))
+        if($orderby == "" && (array_key_exists("ordem", $this->dados))){
             $orderby = "$this->tabela.ordem ASC";
-        /*
-        foreach($this->dados as $name => $arr){
-            if(array_key_exists('especial', $arr) && $arr['especial'] == 'session' &&
-               array_key_exists('session' , $arr) && isset($_SESSION['session'])){
-                die("fooon");
-            }
-        }*/
-        if(isset($this->resticted_where) && $this->resticted_where !== ""){
-            $where = ($where === "")?$this->resticted_where:"$this->resticted_where AND ($where)";
         }
-        $var= $this->db->Read($this->tabela, $campos, $where, $limit, $offset, $orderby);
-        if(!$this->cache) $sentencas[$cachevar] = $var;
+        $wh = $this->getRestrictions($where);        
+        $var= $this->db->Read($this->tabela, $campos, $wh, $limit, $offset, $orderby);
+        if(!$this->cache) {$sentencas[$cachevar] = $var;}
         //echo $this->db->getSentenca();
         return $var;
     }
+    
+            private function getRestrictions($where){
+                if(!isset($this->resticted_where) || empty($this->resticted_where)){return $where;}
+                $restwh = array();
+                foreach($this->resticted_where as $camp => $arr){
+                    foreach($arr as $data){
+                        $restwh[] = "$camp {$data[1]} {$data[0]}";
+                    }
+                }
+                $wh = implode(" AND ", $restwh);
+                return ($where === "")?$wh:"$wh AND ($where)";
+            }
     
     protected $itens = array();
     public function getField($cod, $field, $camp = ""){

@@ -32,76 +32,120 @@ class CController extends \classes\Controller\Controller {
     protected $free_cod = array('index', 'formulario', 'grid');
     protected $blocked_actions = array();
     protected $redirect_link   = array();
-    
-    protected function addToFreeCod($action){
-        if(!is_array($action)) $this->free_cod[] = $action;
-        else $this->free_cod = array_merge ($this->free_cod, $action);
-    }
 
-    private function checkUrl(){
-        if(in_array(CURRENT_ACTION, $this->blocked_actions)){
-            if(!in_array("index", $this->blocked_actions)) Redirect($this->model_name);
-            else Redirect ('');
-        }
-    }
     public function AfterLoad(){
-        //inicializa as variáveis
         $this->checkUrl();
-        //gerencia as sessions
-        $this->cod  = isset($this->vars[0])?$this->vars[0]:"";
-        if(in_array(CURRENT_ACTION, $this->free_cod)&& isset($_SESSION[$this->model_name])) unset($_SESSION[$this->model_name]);
-        elseif($this->cod != "")$_SESSION[$this->model_name] = $this->cod;
-        elseif(isset($_SESSION[$this->model_name])) Redirect(CURRENT_URL ."/".$_SESSION[$this->model_name]);
-        
-        
-        if($this->cod != "" && !in_array(CURRENT_ACTION, $this->free_cod)){
-            $this->registerVar("cod", $this->cod);
-            if(method_exists($this->model, 'getItem')){
-                $this->item = $this->model->getItem($this->cod, "", true);
-                if(empty($this->item)){
-                    $vars['erro'] = "Este item já foi apagado ou nunca existiu!";
-                    $vars['status'] = "0";
-                    Redirect ($this->model_name, 0 , "", $vars);
-                }
-                
-                //restaura as sessions
-                $this->model->restoreSession($this->item);
-                
-                //gera o título do item
-                $title = $this->model->getItemTitle($this->item);
-                if($title != "") $this->genTags($title);
-            }
-        }
-        
-        $this->onlyAutor();
-        //gera as tags
-        if(!empty ($this->item)){
-            $dados = $this->model->getDados();
-            $resumo = $titulo = "";
-            foreach($this->item as $name => $arr){
-                if(!array_key_exists($name, $dados)) continue;
-
-                $arr = $dados[$name];
-                if(array_key_exists('title', $arr)         && $arr['title']) $_SESSION["{$this->model_name}_title"] = $this->item[$name];
-                if(!array_key_exists('seo', $arr)) continue;
-                if(array_key_exists("titulo", $arr['seo']) && $titulo == "") $titulo = $this->item[$name];
-                if(array_key_exists("resumo", $arr['seo']) && $resumo == "") $resumo = $this->item[$name];
-            }
-            $this->genTags($titulo , $resumo, str_replace(" ", " ,", $titulo));
-            $this->genImageTag($this->item);
-        }
-        
-        if(!isset($_REQUEST['ajax'])){$this->registerVar("item", $this->item);}
-        elseif(!empty ($this->item)){$this->registerVar('item', $this->item);}
-        if(session::exists($this->sess_cont_alerts)){
-            $this->setVars(session::getVar($this->sess_cont_alerts));
-            session::destroy($this->sess_cont_alerts);
-        }
-        
+        $this->detectParams();
+        $this->processSessions();
         parent::AfterLoad();
-        
         $this->LoadApps();
     }
+    
+            private function checkUrl(){
+                if(!in_array(CURRENT_ACTION, $this->blocked_actions)){return;}
+                $url =(!in_array("index", $this->blocked_actions))?$this->model_name:"";
+                Redirect($url);
+            }
+
+            private function detectParams(){
+                $autor = \usuario_loginModel::CodUsuario();
+                $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
+                if($this->LoadModel('plugins/action', 'act')->needCode($url)){
+                    $this->cod = isset($this->vars[0])?$this->vars[0]:"";
+                    $this->manageSessions();
+                    $this->prepareItem();
+                    $this->onlyAutor();
+                    $this->generateItemTags();
+                    return $this->registerItem();
+                }
+                $this->manageSessions();
+                $this->model->setRestriction($this->autor_camp, $autor);
+                $this->addToFreeCod(CURRENT_ACTION);
+            }
+
+                    private function manageSessions(){
+                        if(in_array(CURRENT_ACTION, $this->free_cod)&& isset($_SESSION[$this->model_name])) {unset($_SESSION[$this->model_name]);}
+                        elseif($this->cod != ""){$_SESSION[$this->model_name] = $this->cod;}
+                        elseif(isset($_SESSION[$this->model_name])){Redirect(CURRENT_URL ."/".$_SESSION[$this->model_name]);}
+                    }
+
+                    private function prepareItem(){
+                        $this->registerVar("cod", $this->cod);
+                        if(!method_exists($this->model, 'getItem')){return;}
+                        $this->item = $this->model->getItem($this->cod, "", true);
+                        if(empty($this->item)){
+                            $vars['erro'] = "Este item já foi apagado ou nunca existiu!";
+                            $vars['status'] = "0";
+                            Redirect ($this->model_name, 0 , "", $vars);
+                        }
+
+                        //restaura as sessions
+                        $this->model->restoreSession($this->item);
+                    }
+
+                    protected function onlyAutor(){
+                        if($this->autor_camp == ""){return;}
+                        $autor = \usuario_loginModel::CodUsuario();
+                        if(!isset($this->item[$this->autor_camp])){
+                            throw new \classes\Exceptions\PageBlockedException("Você não tem permissão para acessar esta página");
+                        }
+                        $campval = isset($this->item['__'.$this->autor_camp])?$this->item['__'.$this->autor_camp]:$this->item[$this->autor_camp];
+                        if($autor == 0){$this->LoadModel('usuario/login', 'uobj')->needLogin();}
+                        if($autor !== $campval){
+                            throw new \classes\Exceptions\PageBlockedException("O conteúdo contido nesta página só pode ser exibido para os autores do conteúdo");
+                        }
+                    }
+
+                    private function generateItemTags(){
+                        $dados = $this->model->getDados();
+                        $resumo = $titulo = "";
+                        foreach($this->item as $name => $arr){
+                            if(!array_key_exists($name, $dados)) continue;
+
+                            $arr = $dados[$name];
+                            if(array_key_exists('title', $arr)         && $arr['title']) $_SESSION["{$this->model_name}_title"] = $this->item[$name];
+                            if(!array_key_exists('seo', $arr)) continue;
+                            if(array_key_exists("titulo", $arr['seo']) && $titulo == "") $titulo = $this->item[$name];
+                            if(array_key_exists("resumo", $arr['seo']) && $resumo == "") $resumo = $this->item[$name];
+                        }
+                        if($titulo === ""){
+                            $titulo = $this->model->getItemTitle($this->item);
+                        }
+                        $this->genTags($titulo , $resumo, str_replace(" ", " ,", $titulo));
+                        $this->genImageTag($this->item);
+                    }
+
+                    private function registerItem(){
+                        if(empty ($this->item)){return;}
+                        $this->registerVar("item", $this->item);
+                    }
+
+                    protected function addToFreeCod($action){
+                        if(!is_array($action)) $this->free_cod[] = $action;
+                        else $this->free_cod = array_merge ($this->free_cod, $action);
+                    }
+
+            private function processSessions(){
+                if(!session::exists($this->sess_cont_alerts)){return;}
+                $this->setVars(session::getVar($this->sess_cont_alerts));
+                session::destroy($this->sess_cont_alerts);
+            }
+
+            private function LoadApps(){
+                if($this->cod == "") {return;}
+
+                $this->LoadModel('app/aplicativo', 'app');
+                $this->LoadResource('html', 'html');
+                $apps = $this->app->getApps(LINK);
+                if(empty($apps)) {return;}
+
+                $var  = '';
+                foreach($apps as $app){
+                    $link = $this->html->getLink(LINK."/app/$this->cod/{$app['cod']}/index");
+                    $var .= "<a href='$link'>{$app['titulo']}</a>";
+                }
+                EventTube::addEvent('body-top', $var);
+            }
     
     private $listType = "listar";
     public function setListType($ltype){
@@ -183,7 +227,6 @@ class CController extends \classes\Controller\Controller {
     
     protected $sublistview = "admin/auto/areacliente/page";
     public function sublist(){
-        
         if(!isset($this->vars[1])) Redirect (LINK."/show");
         $page  = isset($this->vars[2])?$this->vars[2]:0;
         $campo = $this->vars[1];
@@ -191,19 +234,10 @@ class CController extends \classes\Controller\Controller {
         $link = $this->model_name ."/sublist/$this->cod/$campo";
         $this->item[$campo] = $this->model->getSublist($page, $campo, $link, $this->cod);
         
-        /*$dados = $this->model->getDados();
-        foreach($dados as $nm => $dd){
-            if($nm == $campo) continue;
-            if(!isset($dd['fkey'])) continue;
-            if(!$dd['fkey']['cardinalidade'] != "n1") continue;
-            //if(isset($this->item[$name])) unset($this->item[$name]);
-        }*/
-        
         if($this->item[$campo] === false) {die('faaalse');Redirect (LINK."/show");}
         $this->registerVar("item", $this->item);
         $this->registerVar("comp_action" , 'show');
     	$this->display($this->sublistview);
-        //$this->display("admin/auto/areacliente/page");
     }
     
     public function group(){
@@ -292,22 +326,6 @@ class CController extends \classes\Controller\Controller {
         Redirect($page, 0, "", $dados);
     }
     
-    private function LoadApps(){
-        if($this->cod == "") return;
-        
-        $this->LoadModel('app/aplicativo', 'app');
-        $this->LoadResource('html', 'html');
-        $apps = $this->app->getApps(LINK);
-        if(empty($apps)) return;
-        
-        $var  = '';
-        foreach($apps as $app){
-            $link = $this->html->getLink(LINK."/app/$this->cod/{$app['cod']}/index");
-            $var .= "<a href='$link'>{$app['titulo']}</a>";
-        }
-        EventTube::addEvent('body-top', $var);
-    }
-    
     public function app(){
         if(!isset($this->vars[0])) Redirect (LINK . "/show");
         $cod_app = array_shift($this->vars);
@@ -320,24 +338,6 @@ class CController extends \classes\Controller\Controller {
         if(!method_exists($this->cont, $method)) $method = 'index';
         $this->cont->setDocument(LINK."/$this->cod");
         $this->cont->$method();
-    }
-    
-    protected function onlyAutor(){
-        //if($this->autor_camp == "" || \usuario_loginModel::IsWebmaster()){return;}
-        if($this->autor_camp == ""){return;}
-        $autor = \usuario_loginModel::CodUsuario();
-        if(empty($this->item)){
-            $this->model->restrictByAutor($this->autor_camp, $autor);
-            return;
-        }
-        if(!isset($this->item[$this->autor_camp])){
-            throw new \classes\Exceptions\PageBlockedException("Você não tem permissão para acessar esta página");
-        }
-        $campval = isset($this->item['__'.$this->autor_camp])?$this->item['__'.$this->autor_camp]:$this->item[$this->autor_camp];
-        if($autor == 0){$this->LoadModel('usuario/login', 'uobj')->needLogin();}
-        if($autor !== $campval){
-            throw new \classes\Exceptions\PageBlockedException("O conteúdo contido nesta página só pode ser exibido para os autores do conteúdo");
-        }
     }
     
     public function grid(){
