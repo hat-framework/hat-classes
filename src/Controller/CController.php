@@ -58,9 +58,9 @@ class CController extends \classes\Controller\Controller {
                     $this->generateItemTags();
                     return $this->registerItem();
                 }
+                $this->addToFreeCod(CURRENT_ACTION);
                 $this->manageSessions();
                 $this->model->setRestriction($this->autor_camp, $autor);
-                $this->addToFreeCod(CURRENT_ACTION);
             }
 
                     private function manageSessions(){
