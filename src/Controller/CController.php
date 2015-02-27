@@ -59,13 +59,12 @@ class CController extends \classes\Controller\Controller {
                     return $this->registerItem();
                 }
                 $this->addToFreeCod(CURRENT_ACTION);
-                $this->manageSessions();
+                if(isset($_SESSION[$this->model_name])) {unset($_SESSION[$this->model_name]);}
                 $this->model->setRestriction($this->autor_camp, $autor);
             }
 
                     private function manageSessions(){
-                        if(in_array(CURRENT_ACTION, $this->free_cod)&& isset($_SESSION[$this->model_name])) {unset($_SESSION[$this->model_name]);}
-                        elseif($this->cod != ""){$_SESSION[$this->model_name] = $this->cod;}
+                        if($this->cod != ""){$_SESSION[$this->model_name] = $this->cod;}
                         elseif(isset($_SESSION[$this->model_name])){Redirect(CURRENT_URL ."/".$_SESSION[$this->model_name]);}
                     }
 
