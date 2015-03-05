@@ -342,4 +342,21 @@ class CController extends \classes\Controller\Controller {
     public function grid(){
         $this->display('admin/auto/areacliente/grid');
     }
+    
+    public function gadget(){
+        if(!isset($this->vars[0])){Redirect(CURRENT_CONTROLLER);}
+        $page        = (isset($this->vars[1]))?$this->vars[1]:1;
+        $cod_usuario = \usuario_loginModel::CodUsuario();
+        $limit       = 10;
+        $this->registerVar(
+                'gadgetData',
+                $this->LoadModel('site/gadget', 'sga')
+                    ->setPage($page)
+                    ->setCodUser($cod_usuario)
+                    ->setLimit($limit)
+                    ->getGadgetData($this->vars[0])
+        );
+        $this->registerVar('gadget', $this->sga->getItem($this->vars[0]));
+        $this->display('site/gadget/index');
+    }
 }

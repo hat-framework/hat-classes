@@ -154,4 +154,10 @@ abstract class Controller extends Object {
             session::setVar($this->sess_cont_alerts, $vars);
             Redirect($url, 0, "", $vars);
         }
+        
+        protected final function getVarsParam($index, $error_message = ""){
+            if(isset($this->vars[$index]) && trim($this->vars[$index]) !== ''){return $this->vars[$index];}
+            if($error_message === ""){return "";}
+            throw new \classes\Exceptions\InvalidArgumentException($error_message);
+        }
 }
