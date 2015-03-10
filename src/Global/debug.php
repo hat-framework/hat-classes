@@ -51,7 +51,18 @@ function debugarray($arr, $concat = "", &$last = false, $print = true){
 }
 
 function echoBr($str){
-    echo "($str)<br>\n";
+    if(!is_array($str)){
+        echo "($str)<br>\n";
+        return;
+    }
+    foreach($str as $k => $s){
+        if(!is_array($s)){
+            echo "($k - $s)<br>\n";
+        }else{
+            echo "<h5>$k</h5>";
+            return echoBr($s);
+        }
+    }
 }
 
 function echoCount(){
