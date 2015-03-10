@@ -24,13 +24,19 @@ class widget extends \classes\Classes\Object{
     protected $cachename = "";
     protected $icon = '';
     protected $widget = false;
-    protected $panel = 'panel-default';
+    protected $panel = '';
     protected $description = '';
 
     protected $gui = null;
     public function __construct() {
         $this->LoadResource('html', 'Html');
         $this->gui = new GUI();
+        if($this->panel !== ""){
+            $this->panel = "panel $this->panel";
+            return;
+        }
+        $data        = \classes\Classes\Template::getClass('panel', 'panel panel-default');
+        $this->panel = $data['container'];
     }
     
     public function init(){
@@ -271,17 +277,19 @@ class widget extends \classes\Classes\Object{
      public function openPanel($id = "", $adicional_title = ''){
         $class = "widget_".  GetPlainName(self::whoAmI());
         if($id == "") {$id = ($this->id == "")?$class:$this->id;}
-        $this->gui->opendiv($id, "$this->class $class panel $this->panel");
-                $this->gui->setDescription($this->description);
-                $this->gui->setIcon($this->icon);
-                $this->gui->panelSubtitle($this->title);
-                echo $adicional_title;
-            echo $this->getLinks();
-            $this->gui->opendiv('', "panel-body");
+        $this->gui->opendiv($id, "$this->class $class");
+            $this->gui->opendiv('', "$this->panel");
+                    $this->gui->setDescription($this->description);
+                    $this->gui->setIcon($this->icon);
+                    $this->gui->panelSubtitle($this->title);
+                    echo $adicional_title;
+                echo $this->getLinks();
+                $this->gui->opendiv('', "panel-body");
     }
     
     public function closeWidget(){
-            $this->gui->closediv();//widget_content
+                $this->gui->closediv();//widget_content
+            $this->gui->closediv();//panel
         $this->gui->closediv();//widget
     }
 }

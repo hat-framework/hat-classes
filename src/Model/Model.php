@@ -386,21 +386,30 @@ class Model extends Object
     public function getCampos($campos = array()){
         
         $ignore_display = false;
+        $find           = array();
         if(!empty($campos)){
             $tmp_camps = array();
             foreach($campos as $camp){
-                if(!array_key_exists($camp, $this->dados)) continue;
+                if(!array_key_exists($camp, $this->dados)){
+                    if(false !== strposa($camp, array("COUNT",'SUM'))){
+                        $tmp_camps[$camp] = array('val' => $camp, 'type'=>'val');
+                    }
+                    continue;
+                }
                 $tmp_camps[$camp] = $this->dados[$camp];
             }
             $campos = $tmp_camps;
             $ignore_display = true;
         }else $campos = $this->dados;
         
-        $find = array();
         $join = $this->db->getJoin();
         $this->db->setJoin("");
         $used = array($this->tabela => 0);
         foreach($campos as $name => $data){
+            if(isset($data['type']) && $data['type'] === 'val' && isset($data['val'])){
+                $find[] = $data['val'];
+                continue;
+            }
             if(!$ignore_display && (!array_key_exists("display", $data) || !$data['display'])) continue;
             if(!array_key_exists('fkey', $data)) {$find[] = "$this->tabela.$name"; continue;}
             extract($data['fkey']);
@@ -996,4 +1005,17 @@ class Model extends Object
        }
        return $cod;
     }
+    
+    
+    public function listSide($value, $page = 0, $qtd = '10', $campos = array(), $adwhere = '', $order = ''){
+        if(!is_array($this->pkey)){
+            throw new \classes\Exceptions\InvalidArgumentException("Apenas modelos com chaves primárias duplas podem acessar este método!");
+        }
+        
+        $key = $this->pkey[0];
+        $where = "$key='$value'";
+        if($adwhere !== ""){$where .= " AND ($adwhere)";}
+        return $this->paginate($page, '', '', '', $qtd, $campos, $where, $order);
+    }
+    
 }

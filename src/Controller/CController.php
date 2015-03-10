@@ -47,7 +47,7 @@ class CController extends \classes\Controller\Controller {
                 Redirect($url);
             }
 
-            private function detectParams(){
+            protected function detectParams(){
                 $autor = \usuario_loginModel::CodUsuario();
                 $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
                 if($this->LoadModel('plugins/action', 'act')->needCode($url)){
@@ -63,12 +63,12 @@ class CController extends \classes\Controller\Controller {
                 $this->model->setRestriction($this->autor_camp, $autor);
             }
 
-                    private function manageSessions(){
+                    protected function manageSessions(){
                         if($this->cod != ""){$_SESSION[$this->model_name] = $this->cod;}
                         elseif(isset($_SESSION[$this->model_name])){Redirect(CURRENT_URL ."/".$_SESSION[$this->model_name]);}
                     }
 
-                    private function prepareItem(){
+                    protected function prepareItem(){
                         $this->registerVar("cod", $this->cod);
                         if(!method_exists($this->model, 'getItem')){return;}
                         $this->item = $this->model->getItem($this->cod, "", true);
@@ -95,7 +95,7 @@ class CController extends \classes\Controller\Controller {
                         }
                     }
 
-                    private function generateItemTags(){
+                    protected function generateItemTags(){
                         $dados = $this->model->getDados();
                         $resumo = $titulo = "";
                         foreach($this->item as $name => $arr){
@@ -114,7 +114,7 @@ class CController extends \classes\Controller\Controller {
                         $this->genImageTag($this->item);
                     }
 
-                    private function registerItem(){
+                    protected function registerItem(){
                         if(empty ($this->item)){return;}
                         $this->registerVar("item", $this->item);
                     }
