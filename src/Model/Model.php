@@ -17,15 +17,15 @@ class Model extends Object
     protected $model_description = "";
     
     //models auxiliadres
-    protected $fk11;
-    protected $fkn1;
-    protected $fknn;
-    protected $fkmodel;
     protected $disabled_index = false;
     protected $fkedit = false;
     protected $feature  = "";
     protected $model_name;
     protected $cache = true;
+    public $fk11;
+    public $fkn1;
+    public $fknn;
+    public $fkmodel;
     
     public function  __construct() {
         $this->fkmodel   = new FKModel();
@@ -44,7 +44,7 @@ class Model extends Object
     }
     
     public function restoreSession($item){
-        if(!is_array($item) || empty($item)) return;
+        if(!is_array($item) || empty($item)) {return;}
         
         $this->PrepareFk();
         $keys = $this->fkmodel->get1n();
@@ -52,10 +52,9 @@ class Model extends Object
         foreach($keys as $name => $k){
             $model = $k['fkey']['model'];
             if($model == LINK) continue; //para o caso de categoria que aponta para subcategorias
-            if(isset($item["__".$name])){
-                $_SESSION[$model] = $item["__".$name];
-                if(isset($item[$name])) $_SESSION["{$model}_title"] = $item[$name];
-            }
+            if(!isset($item["__".$name])){continue;}
+            $_SESSION[$model] = $item["__".$name];
+            if(isset($item[$name])) {$_SESSION["{$model}_title"] = $item[$name];}
         }
     }
     
@@ -64,16 +63,10 @@ class Model extends Object
         $this->model_name = $model;
         //echo $this->model_name . "<br/>";
         if(!isset($instances[$model])){
-            $exp    = explode("/", $model);
-            $class  = end($exp);
-            $module = array_shift($exp);
             $this->LoadData($model, 'dm', false);
+            if($this->dm == null) {return array();}
             $instances[$model] = $this->dm;
-            if($this->dm == null) {
-                //echo "($model/{$module}_{$class}Data)<br/>";
-                return;
-            }
-        }else $this->dm = $instances[$model];
+        }else {$this->dm = $instances[$model];}
         $this->dados = $this->dm->getDados($model);
         
     }
@@ -134,7 +127,7 @@ class Model extends Object
         if(empty($v)) { return '';}
         if(count($v) > 1) {
             $out = array();
-            foreach($v as $a) $out[] = $a[$field];
+            foreach($v as $a) {$out[] = $a[$field];}
             return $out;
         }
         return $v[0][$field];
@@ -173,56 +166,59 @@ class Model extends Object
     }
     
     public function getSublist($page, $campo, $link, $cod_pkey = ""){
-        if(!array_key_exists($campo, $this->dados)) return false;
-        if(!array_key_exists('fkey', $this->dados[$campo])) return false;
+        if(!array_key_exists($campo, $this->dados)) {return false;}
+        if(!array_key_exists('fkey', $this->dados[$campo])) {return false;}
         extract($this->dados[$campo]['fkey']);
-        if($cardinalidade != 'n1') return false;
+        if($cardinalidade != 'n1') {return false;}
         $this->LoadModel($model, 'md');
+        $qtd     = isset($limit)? $limit:"10";
+        $filther = isset($filther)?$filther:'';
         
-        $qtd = isset($limit)? $limit:"10";
-        
-        $where = "";
-        if($cod_pkey != ""){
-            $dados = $this->md->getDados();
-            foreach($dados as $nm => $d){
-                if(!isset($d['fkey'])) continue;
-                if($d['fkey']['model'] == $this->model_name){
-                    $where = ("$nm = '$cod_pkey'");
-                    break;
-                }
-            }
-        }
-        if(isset($filther) && $filther != ""){
-            $where = ($where != "")?"$where AND ($filther)":"$filther";
-        }
+        $where = $this->getSublistWhere($cod_pkey, $filther);
         return $this->md->paginate($page, $link, "", "", $qtd, array(), $where);
     }
     
+            private function getSublistWhere($cod_pkey, $filther){
+                $where = $this->getSublistWherePkey($cod_pkey);
+                if(isset($filther) && $filther != ""){
+                    $where = ($where != "")?"$where AND ($filther)":"$filther";
+                }
+                return $where;
+            }
+            
+                   private function getSublistWherePkey($cod_pkey){
+                        if($cod_pkey == ""){return "";}
+                        $dados = $this->md->getDados();
+                        foreach($dados as $nm => $d){
+                            if(!isset($d['fkey'])) {continue;}
+                            if($d['fkey']['model'] != $this->model_name){continue;}
+                            return ("$nm = '$cod_pkey'");
+                        }
+                   }
+    
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
-        //$this->pag->startDebug();
         $this->LoadResource("html", 'html');
+        //$this->pag->startDebug();
 
-        $where = ($cod_item == "")?$cod_item : $this->genWhere($campo, $this->pkey, $cod_item);
-        if($where != ""){
-            if(trim($adwhere) != "") $where .= " AND( $adwhere ) ";
-        }
-        else $where = $adwhere;
-        
-        $link = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
-        //$link = $this->html->getLink($link, true, true);
-        $campos = $this->getCampos($campos);
+        $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
+        $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
+        $cps    = $this->getCampos($campos);
+        $ordem  = $order;
         $this->pag->setJoin($this->db->getJoin());
         $this->pag->setWhere($where);
-        $this->pag->Paginacao($this->tabela, $link, $qtd, $page);
+        $this->pag->Paginacao($this->tabela, $lk, $qtd, $page);
         
         $pk = is_array($this->pkey)?implode(", ", $this->pkey):$this->pkey;
-        if($order == "") $ordem = array_key_exists("ordem", $this->dados)?"ordem DESC":"$this->tabela.$pk DESC";
-        else $ordem = $order;
-        $var =  $this->pag->selecionar($this, $campos, $where, $ordem);
-        //print_r($var);die();
-        return $var;
+        if($ordem == "") {$ordem = array_key_exists("ordem", $this->dados)?"ordem DESC":"$this->tabela.$pk DESC";}
+        return $this->pag->selecionar($this, $cps, $where, $ordem);
     }
+    
+            private function getPaginateWhere($cod_item, $campo, $adwhere){
+                $where = ($cod_item == "")?$cod_item : $this->genWhere($campo, $this->pkey, $cod_item);
+                if($where == ""){return $adwhere;}
+                return (trim($adwhere) != "")?" $where AND( $adwhere ) ":$adwhere;
+            }
     
     public function getPaginationCount($adwhere = "", $cod_item = "", $campo = ""){
         $this->LoadResource("html/paginator", 'pag');
@@ -239,22 +235,24 @@ class Model extends Object
     
     private $item_title = "";
     public function getItemTitle($item){
-        
         if($this->item_title == ""){
             $nm = 'title/'.$this->model_name;
             $v  = session::getVar($nm);
-            if($v == ""){
-                foreach($this->dados as $name => $value){
-                    if(array_key_exists('title', $value)){
-                        $this->item_title = $name;
-                        session::setVar($nm, $name);
-                        break;
-                    }
-                }
-            }else $this->item_title = $v;
+            $this->item_title = ($v === "")?$this->getTitleInArray($nm):$v;
         }
         return (isset($item[$this->item_title]))?$item[$this->item_title]:'';
     }
+    
+            private function getTitleInArray($nm){
+                $title = "";
+                foreach($this->dados as $name => $value){
+                    if(!array_key_exists('title', $value)){continue;}
+                    $title = $name;
+                    session::setVar($nm, $name);
+                    break;
+                }
+                return $title;
+            }
     
     /*
      * @Explication
@@ -266,176 +264,130 @@ class Model extends Object
      * @returns
      */
     public function getItem($cod_item, $campo = "", $refresh = false, $campos = array()){
-        static $ret = array();
-        if(!$refresh && $campos == array()){
-            if(array_key_exists($this->model_name, $ret)){
-                if(array_key_exists($cod_item, $ret[$this->model_name])){
-                    $this->db->clearJoin();
-                    return $ret[$this->model_name][$cod_item];
-                }
-            }
-        }
-        $this->PrepareFk();
-        $campo = ($campo == "") ?$this->pkey :$campo;
-        $campo    = $this->antinjection($campo);
-        $cod_item = $this->antinjection($cod_item);
-        if(is_array($campo)){
-            for($i = 0 ; $i < count($campo); $i++){
-                $c = $campo[$i];
-                $j = isset($cod_item[$i])?$cod_item[$i]:$cod_item;
-                $where[] = "`$c` = '$j'";
-            }
-            $where = implode(" AND ", $where);
-        }
-    	else $where = "`$this->tabela`.`$campo` = '$cod_item'";
-        $vars = $this->selecionar($campos,$where, "1");
-        //print_r($var);echo $this->db->getSentenca() . "<hr/>";
-        if(empty ($vars)) return $vars;
-        
-        $out = array();
-        if(empty($campos)){$campos = array_keys($this->dados);}
-    	foreach($vars as $i => $var){
-            foreach($campos as $name){
-                if(!isset($this->dados[$name])){continue;}
-                $value = $this->dados[$name];
-                if(array_key_exists('title', $value)){
-                    $this->item_title = $name;
-                }
-                
-                if(array_key_exists("fkey", $value)){
-                    $model = $value['fkey']['model'];
-                    $this->LoadModel($model, "temp_model");
-                    $card = "fk".$value['fkey']['cardinalidade'];
-                    if($card == '1n' && !isset($var[$name])) $var[$name] = $cod_item;
-                    if(isset($var[$name])){$var["__$name"] = $var[$name];}
-                    $var[$name] = $this->$card->selecionar(
-                            isset($var[$name])?$var[$name]:"$name", 
-                            $value['fkey'], 
-                            $campo,
-                            $cod_item, 
-                            $this->model_name, 
-                            isset($value['fkey']['sort'])?$value['fkey']['sort']:""
-                    );
-                    //echo "<br/>$name <br/> ";print_r($var[$name]); echo "<br/>".$this->db->getSentenca() . "<br/> \n ".$this->$card->getErrorMessage() ."<br/><hr/>\n\n";
-                    if($value['fkey']['cardinalidade'] == "nn" && is_array($var[$name])) $var["__$name"] = array_keys ($var[$name]);
-                }elseif(array_key_exists("type", $value)){
-                    if($value['type'] == "enum" && isset($var[$name])) {
-                        $var["__$name"] = $var[$name]; 
-                        $var[$name] = (@$value['options'][$var[$name]]);
-                    }
-                }
-            }
-            
-            if(!is_array($campo)&& $campos == array()){
-                if(array_key_exists($campo, $var)){
-                    if(!is_array($var[$campo]))
-                        $ret[$this->model_name][$var[$campo]] = $var;
-                }
-            }
-            
-            foreach($this->dados as $name => $arr){
-                if(array_key_exists($name, $var)){
-                    $out[$i][$name] = $var[$name];
-                }
-
-                if(array_key_exists("__$name", $var)) {
-                    $out[$i]["__$name"] = $var["__$name"];
-                }
-            }
-        }
-        
-        if(count($out) == 1) return array_shift ($out);
-        
-        //print_r($out); echo "<br/>\n\n";
-        return $out;
+        static $gim = null;
+        if($gim === null){$gim = new getItemModel();}
+        return $gim->setModel($this)
+            ->setModelName($this->model_name)
+            ->setDados($this->dados)
+            ->setPkey($this->pkey)
+            ->setTable($this->tabela)
+            ->setCodItem($cod_item)
+            ->setCampo($campo)
+            ->setRefresh($refresh)
+            ->setCampos($campos)
+            ->getItem();
     }
 
     public function getSimpleItem($cod_item, $campos = array(), $coluna = ""){
         $pk = $this->pkey;
-        $campos = $this->getCampos($campos); 
+        $camps  = $this->getCampos($campos); 
         $where  = $this->genWhere($coluna, $pk, $cod_item);
-        $var    = $this->selecionar($campos,$where, "1");
+        $var    = $this->selecionar($camps,$where, "1");
         //print_r($var);echo $this->db->getSentenca() . "<hr/>";
-        if(empty($var)) return $var;
-        
-        return array_shift($var);
+        return (count($var) === 1)?array_shift($var):$var;
     }
     
     public function getPlainItem($key){
-        $w = "";
-        if(is_array($this->pkey)){
-            foreach($this->pkey as $pk){
-                $k  = array_shift($key);
-                $w .= "$pk = '".$this->antinjection($k)."'";
-            }
-        }else $w = "$this->pkey = '".$this->antinjection($key)."'";
+        $w = $this->getPlainItemWhere($key);
         $v = $this->selecionar(array(), $w, 1);
-        if(empty($v)) return $v;
-        return array_shift($v);
+        return(empty($v))?$v:array_shift($v);
     }
+    
+            private function getPlainItemWhere($key){
+                if(!is_array($this->pkey)){return "$this->pkey = '".$this->antinjection($key)."'";}
+                $w = "";
+                foreach($this->pkey as $pk){
+                    $k  = array_shift($key);
+                    $w .= "$pk = '".$this->antinjection($k)."'";
+                }
+                return $w;
+            }
 
     public function listSimpleItem($cod_item, $campos = array(), $coluna = ""){
-        $pk = $this->pkey;
-        $campos = $this->getCampos($campos);
-        $where  = $this->genWhere("$this->tabela`.`$coluna", $pk, $cod_item);
-        $var = $this->selecionar($campos,$where);
-        //echo $this->db->getSentenca();
-        return $var;
+        $pk    = $this->pkey;
+        $camps = $this->getCampos($campos);
+        $where = $this->genWhere("$this->tabela`.`$coluna", $pk, $cod_item);
+        return $this->selecionar($camps,$where);
     }
-
+            
     public function getCampos($campos = array()){
-        
         $ignore_display = false;
-        $find           = array();
-        if(!empty($campos)){
-            $tmp_camps = array();
-            foreach($campos as $camp){
-                if(!array_key_exists($camp, $this->dados)){
-                    if(false !== strposa($camp, array("COUNT",'SUM'))){
+        $camps = $this->getCamposData($campos, $ignore_display);
+        $join  = $this->db->getJoin();
+        $find  = $this->getCamposFounded($camps, $ignore_display);
+        $this->db->addJoin($join);
+        return $find;
+    }
+    
+            private $sql_function = array("COUNT",'SUM');
+            private function getCamposData($campos, &$ignore_display){
+                if(empty($campos)){return $this->dados;}
+                $tmp_camps = array();
+                foreach($campos as $camp){
+                    if(array_key_exists($camp, $this->dados)){$tmp_camps[$camp] = $this->dados[$camp];}
+                    if(false !== strposa($camp, $this->sql_function)){
                         $tmp_camps[$camp] = array('val' => $camp, 'type'=>'val');
                     }
                     continue;
                 }
-                $tmp_camps[$camp] = $this->dados[$camp];
+                $ignore_display = true;
+                return $tmp_camps;
             }
-            $campos = $tmp_camps;
-            $ignore_display = true;
-        }else $campos = $this->dados;
-        
-        $join = $this->db->getJoin();
-        $this->db->setJoin("");
-        $used = array($this->tabela => 0);
-        foreach($campos as $name => $data){
-            if(isset($data['type']) && $data['type'] === 'val' && isset($data['val'])){
-                $find[] = $data['val'];
-                continue;
-            }
-            if(!$ignore_display && (!array_key_exists("display", $data) || !$data['display'])) continue;
-            if(!array_key_exists('fkey', $data)) {$find[] = "$this->tabela.$name"; continue;}
-            extract($data['fkey']);
-            if($cardinalidade == 'nn' || $cardinalidade == 'n1') continue;
-            elseif($cardinalidade == '1n'){
+            
+            private function getCamposFkey($data, $name, &$used){
+                extract($data['fkey']);
+                $cardinalidade = $data['fkey']['cardinalidade'];
+                $model         = $data['fkey']['model'];
+                $keys          = $data['fkey']['keys'];
+                if(in_array($cardinalidade, array('nn','n1'))) {return '';}
+                if($cardinalidade == '11'){return "$this->tabela.$name";}
+                
+                //cardinalidade 1n
                 $this->LoadModel($model, 'fktmp_model');
+                $find    = array();
                 $tab     = $this->fktmp_model->getTable();
                 $tabname = $tab;
                 if(isset($used[$tab])){
                     $used[$tab]++;
                     $tabname = "{$tab}_". $used[$tab];
                     $tab = "$tab as $tabname" ;
-                }else $used[$tab] = 0;
+                }else {$used[$tab] = 0;}
 
                 $this->db->join($this->tabela, $tab, array($name), array($keys[0]), "LEFT");
                 $find[] = "$tabname.".$keys[1]. " AS $name";
-                if(isset($keys[0])) $find[] = "$tabname.".$keys[0]. " AS __$name";
+                if(isset($keys[0])) {$find[] = "$tabname.".$keys[0]. " AS __$name";}
+                return $find;
             }
-            //cardinalidade 11
-            else $find[] = "$this->tabela.$name";
-            //$find[] = $name;
-        }
-        
-        $this->db->addJoin($join);
-        return $find;
-    }
+            
+            private function addToFounded($f, &$find){
+                if(!is_array($f)){$f = array($f);}
+                foreach($f as $ff){
+                    if(trim($ff) === ''){return;}
+                    $find[] = $ff;
+                }
+            }
+            
+            private function getCamposFounded($campos, $ignore_display){
+                $this->db->setJoin("");
+                $used = array($this->tabela => 0);
+                $find = array();
+                foreach($campos as $name => $data){
+                    if(isset($data['type']) && $data['type'] === 'val' && isset($data['val'])){
+                        $find[] = $data['val'];
+                        continue;
+                    }
+                    if(!$ignore_display && (!array_key_exists("display", $data) || !$data['display'])){continue;}
+                    if(!array_key_exists('fkey', $data)) {
+                        $find[] = "$this->tabela.$name"; 
+                        continue;
+                    }
+                    
+                    $f = $this->getCamposFkey($data, $name,$used);
+                    $this->addToFounded($f, $find);
+                }
+                return $find;
+            }
+
 
     /*
      * @Explication
@@ -453,15 +405,8 @@ class Model extends Object
         //validacao dos dados
         $this->setMessage("is_editing", '0');
         $this->post = $dados;
-        if(!$this->validate()){
-            return false;
-        }
+        if(!$this->validate()){return false;}
         
-        /*$pkk = $this->pkey;
-        if(!is_array($pkk)) $pkk = array($pkk);
-        foreach($pkk as $pk){
-            if(isset($this->post[$pk]) && @$this->dados[$pk]['ai']) unset($this->post[$pk]);
-        }*/
         //insere chaves estrangeiras do tipo 1-1
         $this->PrepareFk();
         if(!$this->fk11->inserir($this->post, $dados)){
@@ -470,50 +415,36 @@ class Model extends Object
         }
 
         //associa os dados
-        if(!$this->associa()) return false;
+        if(!$this->associa()) {return false;}
 
         //insere os dados
         $this->lastid = $this->db->Insert($this->tabela, $this->post);
-        if($this->lastid === false){
-            $erro = $this->db->getErrorMessage();
-            if($erro == "" && !is_array($this->pkey)){
-                $e = (DEBUG)?'Debug: '.$this->db->getSentenca():"";
-                $erro = "Erro desconhecido ao inserir dados. ". $e;
-            }
-            
-            if($erro != ""){
-                $this->setErrorMessage($erro);
-                return false;
-            }
-        }
-        if(is_array($this->pkey)){
-            $this->lastid = array();
-            foreach($this->pkey as $pk){
-                $this->lastid[] = $this->post[$pk];
-            }
-        }
-        //echo $this->db->getSentenca() . "<br/><br/>";
+        if(!$this->InsertionProcessLastId($dados)){return false;}
+        
+        return $this->setSuccessMessage("Dados Inseridos Corretamente!");
+    }
+    
+            private function InsertionProcessLastId($dados){
+                if(is_array($this->pkey)){
+                    $this->lastid = array();
+                    foreach($this->pkey as $pk){
+                        $this->lastid[] = $this->post[$pk];
+                    }
+                }
 
-        //recupera os dados para insercao de chave estrangeira
-        //$lastid = $this->getLastId();
-//        insere os dados das chaves estrangeiras n -> 1
-//        if(!$this->fkn1->inserir($dados, $lastid, $this->pkey)){
-//            $this->setAlertMessage($this->fkn1->getErrorMessage());
-//            return false;
-//        }
-//        
-        //insere os dados das chaves estrangeiras n -> n
-        if($this->lastid !== false){
-            if(!$this->fknn->inserir($dados, $this->lastid, $this->pkey)){
-                $this->setAlertMessage($this->fknn->getErrorMessage());
+                if($this->lastid === false){
+                    $erro = $this->db->getErrorMessage();
+                    if($erro == ""){
+                        $e = (DEBUG)?'Debug: '.$this->db->getSentenca():"";
+                        $erro = "Erro desconhecido ao inserir dados. ". $e;
+                    }
+                    return $this->setErrorMessage($erro);
+                }
+                
+                //insere os dados das chaves estrangeiras n -> n
+                if(!$this->fknn->inserir($dados, $this->lastid, $this->pkey)){$this->setAlertMessage($this->fknn->getErrorMessage());}
                 return true;
             }
-        }
-        
-        //if(!$this->disabled_index) $this->indexar();
-        $this->setSuccessMessage("Dados Inseridos Corretamente!");
-        return true;
-    }
     
     public function indexar(){
         $this->LoadModel('search/index', 'sindex');
@@ -536,69 +467,80 @@ class Model extends Object
         //validacao dos dados
         $this->setMessage("is_editing", '1');
         $this->post = $post;
-        $this->id = $id;
-        if(!$this->validate())return false;
-        if(!$this->associa(true)) return false;
+        $this->id   = $id;
+        if(!$this->validate())   {return false;}
+        if(!$this->associa(true)){return false;}
 
         //atualiza o banco de dados
         $where = $this->genWhere($camp, $this->pkey, $id);
         if(!$this->db->Update($this->tabela,$this->post, $where)){
             $this->setErrorMessage($this->db->getErrorMessage());
-            //$this->setErrorMessage($this->db->getSentenca());
             return false;
         }
         
         //edita chaves estrangeiras do tipo 1-1
         $this->PrepareFk();
-        if(!$this->fk11->editar($post, $id)){
-            if($this->fkedit == false){
-                $this->setAlertMessage($this->fk11->getErrorMessage());
-                return false;
-            }
+        if(!$this->fk11->editar($post, $id) && $this->fkedit == false){
+            $this->setAlertMessage($this->fk11->getErrorMessage());
+            return false;
         }
 
         //seta mensagem de sucesso
-        $this->setSuccessMessage("Dados Alterados Corretamente!");
-        return true;
+        return $this->setSuccessMessage("Dados Alterados Corretamente!");
     }
     
-    /*Atenção ao utilizar esta função, ela não deveria ser pública, está assim só para o
+    /**
+     * Atenção ao utilizar esta função, ela não deveria ser pública, está assim só para o
      * caso de listar as chaves estrangeiras N1
-     */
-    public function genWhere($camp, $pkey, $id){
-
-        $camp = ($camp == "")? $pkey : $camp ;
-        $where = "";
-        if(is_array($camp) && is_array($id)){
-            $prefix = ($camp == $pkey)?"`$this->tabela`.":"";
-            $and = "";
-            $i = 0;
-            foreach($camp as $c){
-                $v = $id[$i++];
-                if(strstr($c, ".")) $c = str_replace(".", "`.`", $c);
-                $where .= "$and $prefix`$c` = '$v'";
-                $and = " AND ";
-            }
-        }
-        else{
+     */    
+    public function genWhere($campo, $pkey, $id){
+        $camp  = ($campo == "")? $pkey : $campo ;
+        if(!is_array($camp) || !is_array($id)){
             if(is_array($camp)) {
+                return $this->genWhereCampCase($camp, $id);
+            }
+            if(is_array($id)) {
+                return $this->genWhereIdCase($id, $camp);
+            }
+            return "`$camp` = '$id'";
+        }
+        
+        return $this->genWhereDualArray($camp, $pkey);;
+    }
+    
+            private function genWhereDualArray($camp, $pkey){
+                if(!is_array($camp) || is_array($id)){return "";}
+                $prefix = ($camp == $pkey)?"`$this->tabela`.":"";
+                $and    = "";
+                $where  = "";
+                $i      = 0;
+                foreach($camp as $c){
+                    $v = $id[$i++];
+                    if(strstr($c, ".")){$c = str_replace(".", "`.`", $c);}
+                    $where .= "$and $prefix`$c` = '$v'";
+                    $and = " AND ";
+                }
+                return $where;
+            }
+            
+            private function genWhereCampCase($camp, $id){
+                if(!is_array($camp)) {return "";}
                 reset($camp);
                 $campo   = current($camp);
-                $where  = "`$campo` = '$id'";
+                return "`$campo` = '$id'";
             }
-            elseif(is_array($id)) {
+            
+            private function genWhereIdCase($id, $camp){
                 reset($id);
+                $where   = "";
                 $or      = "";
                 $campo   = $camp;
                 foreach($id as $i){
                     $where  .= "$or `$campo` = '$i'";
                     $or = " OR ";
                 }
+                return $where;
             }
-            else $where = "`$camp` = '$id'";
-        }
-        return $where;
-    }
 
     /*
      * @Explication
@@ -610,58 +552,51 @@ class Model extends Object
      * @returns
      * @boolean: true caso consiga apagar, false caso contrario
      */
+    
     public function apagar($valor, $chave = ""){
         
         //se não foi enviada uma chave, assume a chave estrangeira
         $this->PrepareFk();
-        if($chave == "") $chave = $this->pkey;
-        $wh = "";
+        if($chave == "") {$chave = $this->pkey;}
         
-        //seta o where composto
-        if(is_array($chave)){
-            $c1 = count($valor);
-            if(count($chave) != $c1){
-                $this->setErrorMessage("A chave e o valor devem conter o mesmo número de elementos");
-                return false;
-            }
-
-            $arr = array();
-            while($c1-- > 0){
-                //prepara os valores a serem consultados
-                $valor[$c1] = $this->antinjection($valor[$c1]);
-                $chave[$c1] = $this->antinjection($chave[$c1]);
-                $arr[] = "`$chave[$c1]` = '$valor[$c1]'";
-            }
-            $wh = implode(" AND ", $arr);
-        }else {
-            //prepara os valores a serem consultados
-            $valor = $this->antinjection($valor);
-            $chave = $this->antinjection($chave);
-            $wh = "`$chave` = '$valor'";
-        }
-        
-        //recupera o id do item para apagar chaves estrangeiras
-        $selecao = $this->selecionar(array(), $wh, "1");
-        if(!empty($selecao)) $selecao = array_shift($selecao);
+        $wh = $this->apagarGetWhere($valor, $chave);
+        if($wh === false){return false;}
         
         //apaga o item
         if(!$this->db->Delete($this->tabela, $wh)){
             $this->setErrorMessage($this->db->getErrorMessage());
             return false;
         }
-        //die($this->db->getSentenca());
-        //apaga a chave estrangeira
-        if(!empty($selecao)){
-            if(!$this->fk11->apagar($selecao)){
-                $this->setErrorMessage($this->fk11->getErrorMessage());
-                return false;
-            }
-        }
-        $this->setSuccessMessage("Conteudo apagado com sucesso!");
-        return true;
+        
+        return $this->setSuccessMessage("Conteudo apagado com sucesso!");
     }
     
-    protected function PrepareFk(){
+            private function apagarGetWhere($chave, $valor){
+                
+                if(!is_array($chave)){
+                    $valor = $this->antinjection($valor);
+                    $chave = $this->antinjection($chave);
+                    return "`$chave` = '$valor'";
+                }
+                
+                //seta o where composto
+                $c1 = count($valor);
+                if(count($chave) != $c1){
+                    $this->setErrorMessage("A chave e o valor devem conter o mesmo número de elementos");
+                    return false;
+                }
+
+                $arr = array();
+                while($c1-- > 0){
+                    //prepara os valores a serem consultados
+                    $valor[$c1] = $this->antinjection($valor[$c1]);
+                    $chave[$c1] = $this->antinjection($chave[$c1]);
+                    $arr[] = "`$chave[$c1]` = '$valor[$c1]'";
+                }
+                return implode(" AND ", $arr);
+            }
+    
+    public function PrepareFk(){
         $this->fkmodel->analiza($this->dados);
         $this->fk11->set($this->fkmodel->get11(), $this->model_name);
         $this->fkn1->set($this->fkmodel->getn1(), $this->model_name);
@@ -676,52 +611,58 @@ class Model extends Object
      * @boolean: true caso consiga validar, false caso contrario
      */
     protected function validate(){
-        
-        //verifica se tem dados a serem validados
-        if(empty ($this->post)){ 
-            $this->setErrorMessage("Dados a serem inseridos estão vazios!");
-            return false;
-        }
-        
-        if(!is_array($this->pkey) && isset($this->post[$this->pkey]) && 
-          ($this->post[$this->pkey] == 0 || $this->post[$this->pkey] == '')){
-              unset($this->post[$this->pkey]);
-        }
-          
-        $post = array();
-        $this->dados = $this->getDados();
-        foreach($this->post as $name => $valor){
-            //evita sql injection
-            if(array_key_exists($name, $this->dados)){
-                if(is_array($valor)){
+        if(false === $this->validadeEmptyPost()){return false;}
+        $this->validateUnsetPkey();
+        $this->post = $this->validateGetPost();
+        return $this->validateValidator();
+    }
+    
+            private function validadeEmptyPost(){
+                if(!empty ($this->post)){return true;}
+                return $this->setErrorMessage("Dados a serem inseridos estão vazios!");
+            }
+            
+            private $invalid_pkeys = array(0,'0','');
+            private function validateUnsetPkey(){
+                if(is_array($this->pkey)){return;}
+                if(!isset($this->post[$this->pkey])){return;}
+                if(!in_array($this->post[$this->pkey], $this->invalid_pkeys)){return;}
+                unset($this->post[$this->pkey]);
+            }
+            
+            private function validateGetPost(){
+                $post = array();
+                $this->dados = $this->getDados();
+                foreach($this->post as $name => $valor){
+                    if(!array_key_exists($name, $this->dados)){continue;}
+                    if(!is_array($valor)){
+                        $pos = strpos($valor, "FUNC_");
+                        $post[$name] = ($pos === false)?$this->antinjection($valor):$valor;
+                        continue;
+                    }
+
                     foreach($valor as $i => $v){
                         if(is_object($v) || is_array($v))continue;
                         $pos = strpos($v, "FUNC_");
-                        if($pos === false) $post[$name][$i] = $this->antinjection($v);
-                        else               $post[$name][$i] = $v;
+                        $post[$name][$i] = ($pos === false)?$this->antinjection($v):$v;
                     }
                 }
-                else{
-                    $pos = strpos($valor, "FUNC_");
-                    if($pos === false) $post[$name] = $this->antinjection($valor);
-                    else               $post[$name] = $valor;
-                }
+                if(array_key_exists('antispam', $this->post)) {$post['antispam'] = $this->post['antispam'];}
+                return $post;
             }
             
-        }
-        if(array_key_exists('antispam', $this->post)) $post['antispam'] = $this->post['antispam'];
-        $this->post = $post;
-        $this->LoadResource("formulario/validator", "pval");
-        if(!$this->pval->validate($this->dados, $this->post)){
-            $this->setSimpleMessage('validation', $this->pval->getMessages());
-            $e    = $this->getMessages();
-            $erro = (isset($e['validation']['erro'])?$e['validation']['erro']: "Erro ao validar os dados a serem inseridos");
-            $this->setErrorMessage($erro);
-            return false;
-    	}
-    	$this->post = $this->pval->getValidPost();
-    	return true;
-    }
+            private function validateValidator(){
+                $this->LoadResource("formulario/validator", "pval");
+                if(!$this->pval->validate($this->dados, $this->post)){
+                    $this->setSimpleMessage('validation', $this->pval->getMessages());
+                    $e    = $this->getMessages();
+                    $erro = (isset($e['validation']['erro'])?$e['validation']['erro']: "Erro ao validar os dados a serem inseridos");
+                    $this->setErrorMessage($erro);
+                    return false;
+                }
+                $this->post = $this->pval->getValidPost();
+                return true;
+            }
     
     private function debugPost($method = "", $line = ''){
         if($this->tabela == "usuario") return;
@@ -740,79 +681,88 @@ class Model extends Object
      */
     protected final function associa($edit = false){
         
-        $data = $this->dados;
-        if(!is_array($data) || empty ($data)){
-            $this->setErrorMessage("Erro no sistema! Dados a serem inseridos não foram configurados,
-                consulte o administrador");
-            return false;
-        }
-
-        $post = $post2 = array();        
-        foreach($this->dados as $tname => $arr){
-            
-            if(array_key_exists($tname, $this->post)){
-                //associa as chaves estrangeiras
-                if(!array_key_exists('fkey', $arr) || 
-                    $arr['fkey']['cardinalidade'] == '11' ||
-                    $arr['fkey']['cardinalidade'] == '1n'){
-                    $post[$tname] = $this->post[$tname];
-                }
-            }
-            
-        }
-
-        if($this->id == ""){
-        //if($edit == false){
-            if(is_array($this->pkey)){
-                foreach($this->pkey as $pk)
-                    if(!array_key_exists($pk, $post))
-                        if(array_key_exists('ai', $this->dados[$pk]))
-                            $post[$pk] = "FUNC_NULL";
-            }
-            else{
-                if(!array_key_exists($this->pkey, $post))
-                    if(array_key_exists($this->pkey, $this->dados) && 
-                       array_key_exists('ai', $this->dados[$this->pkey]))
-                        $post[$this->pkey] = "FUNC_NULL";
-            }
-        }
-        
-        if(empty ($post)){
-            $model = @ucfirst(end(explode("/", $this->model_name)));
-            $this->setErrorMessage("Caro usuário, os dados do formulário enviado não foram preenchidos no módulo: $model!");
-            return false;
-        }
-        
+        if(!$this->checkDataForAssociation()){return false;}       
+        $post = $this->preparePostAssociation();
+        $this->processEmptyAssociationId($post);
+        if(!$this->processEmptyAssociationPost($post)){return false;}
         $this->post = $post;
        // print_r($this->post); die();
         return true;
     }
+            private function checkDataForAssociation(){
+                if(!is_array($this->dados) || empty ($this->dados)){
+                    $this->setErrorMessage("Erro no sistema! Dados a serem inseridos não foram configurados,
+                        consulte o administrador");
+                    return false;
+                }
+                return true;
+            }
+    
+            private function preparePostAssociation(){
+                $post = array();        
+                foreach($this->dados as $tname => $arr){
+
+                    if(!array_key_exists($tname, $this->post)){continue;}
+                    //associa as chaves estrangeiras
+                    if(!array_key_exists('fkey', $arr) || 
+                        $arr['fkey']['cardinalidade'] == '11' ||
+                        $arr['fkey']['cardinalidade'] == '1n'){
+                        $post[$tname] = $this->post[$tname];
+                    }
+
+                }
+                return $post;
+            }
+
+            private function processEmptyAssociationId(&$post){
+                if($this->id != ""){return;}
+                $pkey = is_array($this->pkey)?$this->pkey:array($this->pkey);
+                foreach($pkey as $pk){
+                    if(!array_key_exists($pk, $post)){continue;}
+                    if(!array_key_exists($pk, $this->dados)){continue;}
+                    if(!array_key_exists('ai', $this->dados[$pk])){continue;}
+                    $post[$pk] = "FUNC_NULL";
+                }
+            }
+
+            private function processEmptyAssociationPost($post){
+                if(!empty ($post)){return true;}
+                $model = @ucfirst(end(explode("/", $this->model_name)));
+                $this->setErrorMessage("Caro usuário, os dados do formulário enviado não foram preenchidos no módulo: $model!");
+                return false;
+            }
     
     
     public function getLastId(){
-        if($this->lastid != "") return $this->lastid;
-    	$pkey  = $this->pkey;
+        if($this->lastid != ""){ return $this->lastid;}
+        $pkey  = $this->pkey;
         $order = "";
-    	if(!is_array($pkey)){
-            $order = $pkey;
-            $index = $pkey;
-            $pkey = array($this->pkey);
-        }else{
-            $index = $pkey[0];
-            $virg  = "";
-            foreach ($pkey as $pk){
-                $order .= "$virg $pk";
-                $virg   =  ",";
-            }
-        }
+        $this->prepareLastIdPkey($pkey, $order);
         
     	$var = $this->selecionar($pkey, "", "1", "", "$order DESC");
-        if(empty ($var)) return "";
-    	$var = array_shift($var);
-        foreach($var as $arr) $out[] = $arr;
-        if(count($out) == 1)  $out = array_shift($out);
-    	return ($out);
+        if(empty ($var)) {return "";}
+        
+    	$v = array_shift($var);
+        foreach($v as $arr) {$out[] = $arr;}
+        return(count($out) == 1)?array_shift($out):($out);
     }
+    
+            private function prepareLastIdPkey(&$pkey, &$order){
+                
+                $order = "";
+                if(!is_array($pkey)){
+                    $order = $pkey;
+                    $pkey = array($this->pkey);
+                    return;
+                }
+                
+                $virg  = "";
+                foreach ($pkey as $pk){
+                    $order .= "$virg $pk";
+                    $virg   =  ",";
+                }
+                
+            }
     
     /*
      * @Explication
@@ -912,18 +862,14 @@ class Model extends Object
     }
     
     public function antinjection($sql, $permSimpleTags = true){
-        
-        if($permSimpleTags){
-            if(is_array($sql)){
-                foreach($sql as &$sq){
-                    if(is_array($sq)) continue;
-                    $sq = $this->tratamento($sq);
-                }
-            }else $sql = $this->tratamento($sql);
-        }
-        else {
+        if(!$permSimpleTags){
             $sql = strip_tags($sql, "<p><br/><span><img><a>");
-            $sql = str_replace(array("'"), array('"'), $sql);
+            return str_replace(array("'"), array('"'), $sql);
+        }
+        if(!is_array($sql)){return $this->tratamento($sql);}
+        foreach($sql as &$sq){
+            if(is_array($sq)) {continue;}
+            $sq = $this->tratamento($sq);
         }
         return $sql;
     }
@@ -940,24 +886,27 @@ class Model extends Object
         return $this->LoadClassFromPlugin("$this->model_name/services/{$serviceName}Service", 'svc')->execute($params);
     }
     
-    public function join($modeldst, $ksrc = "", $kdst = "", $join = 'LEFT', $modelsrc = ''){
-        $ksrc = ($ksrc == "")?$this->pkey:$ksrc;
-        $tb = $this->LoadModel($modeldst, 'tmp_model')->getTable();
-        if($kdst == ""){
-            $dados = $this->tmp_model->getDados();
-            foreach($dados as $key => $var){
-                if(!isset($var['fkey'])) continue;
-                if($var['fkey']['model'] != $this->model_name || !in_array($var['fkey']['model'], array('11', '1n'))) continue;
-                $kdst = $key; 
-                break;
-            }
-        }
+    public function join($modeldst, $key_src = "", $key_dst = "", $join = 'LEFT', $modelsrc = ''){
+        $tb   = $this->LoadModel($modeldst, 'tmp_model')->getTable();
+        $ksrc = ($key_src == "")?$this->pkey:$key_src;
+        $kdst = $this->getKeyDst($key_dst);
         if(!is_array($ksrc)){$ksrc = array($ksrc);}
         if(!is_array($kdst)){$kdst = array($kdst);}
         $tabela = ($modelsrc === "")?$this->tabela:$this->LoadModel($modelsrc, 'tmp_model')->getTable();
         $this->db->Join($tabela, $tb, $ksrc, $kdst, $join);
         return $tb;
     }
+    
+            private function getKeyDst($kdst){
+                if($kdst !== ""){return $kdst;}
+                $dados = $this->tmp_model->getDados();
+                foreach($dados as $key => $var){
+                    if(!isset($var['fkey'])) continue;
+                    if($var['fkey']['model'] != $this->model_name || !in_array($var['fkey']['model'], array('11', '1n'))) continue;
+                    return $key;
+                }
+                
+            }
     
     public function importDataFromArray($dados, $insertIgnore = false){
         $callback = $this->getImportationCallback();
