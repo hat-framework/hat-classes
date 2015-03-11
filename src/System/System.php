@@ -74,8 +74,9 @@ abstract class system extends Object {
         //$act = ($action == "index")?"":$action . "/";
         $act = $action . "/";
         $page = "$this->modulo/$this->controller/$act";
-        if (!defined("CURRENT_PAGE"))   define("CURRENT_PAGE"  , $page);
-        if (!defined("CURRENT_ACTION")) define("CURRENT_ACTION", $action);
+        if (!defined("CURRENT_CANONICAL_PAGE")) {define("CURRENT_CANONICAL_PAGE"  , "$this->modulo/$this->controller/$action");}
+        if (!defined("CURRENT_PAGE"))           {define("CURRENT_PAGE"  , $page);}
+        if (!defined("CURRENT_ACTION"))         {define("CURRENT_ACTION", $action);}
         if(is_object($this->plloader)){
             if(is_admin) $this->plloader->beforeAdminLoad();
             else $this->plloader->beforeCommonLoad($this->newvars);
