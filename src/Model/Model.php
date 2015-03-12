@@ -199,7 +199,7 @@ class Model extends Object
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
         $this->LoadResource("html", 'html');
-        //$this->pag->startDebug();
+        $this->pag->startDebug();
 
         $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
@@ -355,6 +355,7 @@ class Model extends Object
                 return $find;
             }
             
+            
                     private function getCamposFkey($data, $name, &$used){
                         extract($data['fkey']);
                         $cardinalidade = $data['fkey']['cardinalidade'];
@@ -380,7 +381,7 @@ class Model extends Object
                                 $k1   = array_shift($keys);
                                 if($k1 !== null) {
                                     $this->db->join($this->tabela, $tab, array($name), array($k1), "LEFT");
-                                    $find[] = "$tabname.".$keys[0]. " AS __$name";
+                                    $find[] = "$tabname.".$k1. " AS __$name";
                                 }
                                 
                                 $k2   = array_shift($keys);
