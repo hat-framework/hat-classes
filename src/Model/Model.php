@@ -334,39 +334,6 @@ class Model extends Object
                 return $tmp_camps;
             }
             
-            private function getCamposFkey($data, $name, &$used){
-                extract($data['fkey']);
-                $cardinalidade = $data['fkey']['cardinalidade'];
-                $model         = $data['fkey']['model'];
-                $keys          = $data['fkey']['keys'];
-                if(in_array($cardinalidade, array('nn','n1'))) {return '';}
-                if($cardinalidade == '11'){return "$this->tabela.$name";}
-                
-                //cardinalidade 1n
-                $this->LoadModel($model, 'fktmp_model');
-                $find    = array();
-                $tab     = $this->fktmp_model->getTable();
-                $tabname = $tab;
-                if(isset($used[$tab])){
-                    $used[$tab]++;
-                    $tabname = "{$tab}_". $used[$tab];
-                    $tab = "$tab as $tabname" ;
-                }else {$used[$tab] = 0;}
-
-                $this->db->join($this->tabela, $tab, array($name), array($keys[0]), "LEFT");
-                $find[] = "$tabname.".$keys[1]. " AS $name";
-                if(isset($keys[0])) {$find[] = "$tabname.".$keys[0]. " AS __$name";}
-                return $find;
-            }
-            
-            private function addToFounded($f, &$find){
-                if(!is_array($f)){$f = array($f);}
-                foreach($f as $ff){
-                    if(trim($ff) === ''){return;}
-                    $find[] = $ff;
-                }
-            }
-            
             private function getCamposFounded($campos, $ignore_display){
                 $this->db->setJoin("");
                 $used = array($this->tabela => 0);
@@ -387,6 +354,58 @@ class Model extends Object
                 }
                 return $find;
             }
+            
+                    private function getCamposFkey($data, $name, &$used){
+                        extract($data['fkey']);
+                        $cardinalidade = $data['fkey']['cardinalidade'];
+                        $model         = $data['fkey']['model'];
+                        $keys          = $data['fkey']['keys'];
+                        if(in_array($cardinalidade, array('nn','n1'))) {return '';}
+                        if($cardinalidade == '11'){return "$this->tabela.$name";}
+
+                        //cardinalidade 1n
+                        $this->LoadModel($model, 'fktmp_model');
+                        $tab     = $this->fktmp_model->getTable();
+                        $tabname = $tab;
+                        if(isset($used[$tab])){
+                            $used[$tab]++;
+                            $tabname = "{$tab}_". $used[$tab];
+                            $tab = "$tab as $tabname" ;
+                        }else {$used[$tab] = 0;}
+                        return $this->getCamposFkeyFounded($keys,$tabname, $tab, $name);
+                    }
+                    
+                            private function getCamposFkeyFounded($keys,$tabname, $tab, $name){
+                                $find = array();
+                                $k1   = array_shift($keys);
+                                if($k1 !== null) {
+                                    $this->db->join($this->tabela, $tab, array($name), array($k1), "LEFT");
+                                    $find[] = "$tabname.".$keys[0]. " AS __$name";
+                                }
+                                
+                                $k2   = array_shift($keys);
+                                if($k2 !== null) {
+                                    $find[] = "$tabname.".$k2. " AS $name";
+                                }
+                                if(empty($keys)){return $find;}    
+                                
+                                $dados = $this->fktmp_model->getDados();
+                                foreach($keys as $key){
+                                    if(!array_key_exists($key, $dados)){continue;}
+                                    $keyname = isset($dados[$key]['name'])?$dados[$key]['name']:"$name $key";
+                                    $find[] = "$tabname.".$key. " AS `$keyname`";
+                                }
+                                
+                                return $find;
+                            }
+                    
+                    private function addToFounded($f, &$find){
+                        if(!is_array($f)){$f = array($f);}
+                        foreach($f as $ff){
+                            if(trim($ff) === ''){return;}
+                            $find[] = $ff;
+                        }
+                    }
 
 
     /*
