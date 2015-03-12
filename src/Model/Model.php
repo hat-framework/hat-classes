@@ -505,10 +505,10 @@ class Model extends Object
             return "`$camp` = '$id'";
         }
         
-        return $this->genWhereDualArray($camp, $pkey);;
+        return $this->genWhereDualArray($camp, $pkey, $id);
     }
     
-            private function genWhereDualArray($camp, $pkey){
+            private function genWhereDualArray($camp, $pkey, $id){
                 if(!is_array($camp) || is_array($id)){return "";}
                 $prefix = ($camp == $pkey)?"`$this->tabela`.":"";
                 $and    = "";
