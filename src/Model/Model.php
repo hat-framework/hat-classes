@@ -199,7 +199,7 @@ class Model extends Object
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
         $this->LoadResource("html", 'html');
-        $this->pag->startDebug();
+        //$this->pag->startDebug();
 
         $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
