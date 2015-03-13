@@ -43,8 +43,14 @@ class getItemModel extends \classes\Classes\Object{
     }
     
     public function setCampo($campo){
-        if(trim($campo) === ""){$campo = $this->pkey;}
-        return $this->set('campo', trim($campo));
+        if(is_array($campo)){
+            if(empty($campo)){$campo = $this->pkey;}
+            foreach($campo as &$camp){
+                $camp = trim($camp);
+            }
+        }
+        elseif(trim($campo) === ""){$campo = $this->pkey;}
+        return $this->set('campo', $campo);
     }
     
     public function setRefresh($refresh){
