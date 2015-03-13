@@ -26,7 +26,8 @@ class getItemModel extends \classes\Classes\Object{
     }
     
     public function setPkey($pkey){
-        if(trim($this->campo) === ""){$this->campo = $pkey;}
+        if((is_array($this->campo) && empty($this->campo)) || 
+           (!is_array($this->campo) && trim($this->campo) === "")){$this->setCampo($pkey);}
         return $this->set('pkey', $pkey);
     }
     

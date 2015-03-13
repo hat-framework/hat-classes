@@ -131,67 +131,82 @@ class Component extends Object{
     }
 
     public function listInTable($model, $itens, $title = "", $class = '', $drawHeaders = false, $header = array()){
-        
         $this->LoadModel($model, 'obj');
-        $dados = $this->obj->getDados();
-        $pkey = $this->obj->getPkey();
-        $id = str_replace("/", "_", $model);
-        $class = ($class != "")? " class='$class'":"";
-        $addclass = $this->getEnumClasses($dados);
+        $dados  = $this->obj->getDados();
         $table  = array();
-        $i      = 0;
-        
-        $stopheader = false;
-        if(!empty($itens)){
-            foreach($itens as $item){
-                $tb = array();
-                if(!$this->pode_exibir($model, $item)) continue;
-                foreach($item as $name => $valor){
-                    if($this->checkIsPrivate($dados, $name)) continue;
-                    if(!$stopheader) $header[] = array_key_exists($name, $dados)?$dados[$name]['name']:$name;
-                    $val = $this->formatType($name, $dados, $valor, $item);
-                    $tb[$name] = $val;
+        if(!empty($itens)){$table = $this->listInTableNotEmpty($itens, $model, $dados, $header);}
+        else{$this->listInTableEmptyItens($dados, $header);}
+        $this->listInTablePrintTable($model, $class, $title, $table, $header);
+    }
+    
+            private function listInTableNotEmpty($itens, $model, $dados, &$header){
+                $i          = 0;
+                $addclass   = $this->getEnumClasses($dados);
+                $pkey       = $this->obj->getPkey();
+                $stopheader = false;
+                $table      = array();
+                foreach($itens as $item){
+                    if(!$this->pode_exibir($model, $item)) {continue;}
+                    
+                    $tb = array();
+                    $this->listInTableNotEmptyTbData($item, $dados, $stopheader, $header, $tb);
+                    
+                    $links = $this->getActionLinks($model, $pkey, $item);
+                    $this->listInTableNotEmptyTbAcoes($links, $stopheader, $header, $tb);
+                    
+                    $tb["__id"]  = implode("-", $this->getPkeyValue($pkey, $item));
+                    $tb["__class"] = $this->getEnumClass($addclass, $item);
+
+                    $table[$i] = $tb;
+                    $i++;
+                    $stopheader = true;
                 }
-                $links = $this->getActionLinks($model, $pkey, $item);
-                //if(!MOBILE){
-                    $tb["Ações"] = (is_array($links))? implode(" ", $links):"";
-                    if(!$stopheader) {
-                        if($tb["Ações"] != "" && !MOBILE){
-                            $header[] = "Ações";
+                return $table;
+            }
+                    private function listInTableNotEmptyTbData($item, $dados, $stopheader, &$header, &$tb){
+                        foreach($item as $name => $valor){
+                            if($this->checkIsPrivate($dados, $name)) {continue;}
+                            if(!$stopheader) {
+                                $header[] = array_key_exists($name, $dados)?$dados[$name]['name']:$name;
+                            }
+                            $val = $this->formatType($name, $dados, $valor, $item);
+                            $tb[$name] = $val;
                         }
                     }
-                    if($tb["Ações"] == "") unset($tb["Ações"]);
-                //}
-                //else $tb['__link'] = $links;
-                
-                $tb["__id"]  = implode("-", $this->getPkeyValue($pkey, $item));
-                $tb["__class"] = $this->getEnumClass($addclass, $item);
-                
-                $table[$i] = $tb;
-                $i++;
-                $stopheader = true;
+            
+                    private function listInTableNotEmptyTbAcoes($links, $stopheader, &$header, &$tb){
+                        $tb["Ações"] = (is_array($links))? implode(" ", $links):"";
+                        if(!$stopheader && $tb["Ações"] != "" && !MOBILE){
+                            $header[] = "Ações";
+                        }
+                        if($tb["Ações"] == "") {unset($tb["Ações"]);}
+                    }
+    
+            private function listInTableEmptyItens($dados, &$header){
+                //getHeader
+                foreach($dados as $name => $arr){
+                    if($this->checkIsPrivate($dados, $name)) {continue;}
+                    if(!isset($arr['name'])) {continue;}
+                    if(!isset($arr['display'])) {continue;}
+                    $header[] = $arr['name'];
+                }
+                if(!empty($this->listActions)){
+                    $header[] = "Ações";
+                }
             }
-        }else{
-            //getHeader
-            foreach($dados as $name => $arr){
-                if($this->checkIsPrivate($dados, $name)) continue;
-                if(!isset($arr['name'])) continue;
-                if(!isset($arr['display'])) {continue;}
-                $header[] = $arr['name'];
+            
+            private function listInTablePrintTable($model, $class, $title, $table, $header){
+                $id  = str_replace("/", "_", $model);
+                $cls = ($class != "")? " class='$class'":"";
+                echo "<div$cls id='$id'> ";
+                    $this->gui->subtitle($title);
+                    $this->LoadResource('html/table', 'tb');
+                    $this->tb->forceDrawHeaders();
+                    $this->tb->printable(true);
+                    $this->tb->draw($table, $header);
+                    $this->print_paginator_if_exists($this->obj);
+                echo "</div>";
             }
-            if(!empty($this->listActions)){
-                $header[] = "Ações";
-            }
-        }
-        echo "<div$class id='$id'> ";
-            $this->gui->subtitle($title);
-            $this->LoadResource('html/table', 'tb');
-            $this->tb->forceDrawHeaders();
-            $this->tb->printable(true);
-            $this->tb->draw($table, $header);
-            $this->print_paginator_if_exists($this->obj);
-        echo "</div>";
-    }
     
     protected function DrawItem($model, $pkey, $item, $dados){
         
@@ -278,49 +293,65 @@ class Component extends Object{
         if(method_exists($this, $method)) {
             return trim($this->$method($valor, $dados, $item));
         }
-        if(!array_key_exists($name, $dados)) {if(!is_array ($valor))return trim($valor); else return $valor;}
-        if(!array_key_exists('type', $dados[$name])){
-            return is_array($valor) ? $valor: trim($valor);
+        if(is_array($valor)) {return $valor;}
+        if(!array_key_exists($name, $dados) || !array_key_exists('type', $dados[$name])) {
+            return trim($valor);
         }
-        if(is_array($valor)) return $valor;
-        switch ($dados[$name]["type"]){
-            case 'date':
-                if($valor == '0000-00-00') return "";
-                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
-                break;
-            case 'datetime': 
-            case 'timestamp': 
-                if($valor == '0000-00-00' || $valor == '0000-00-00 00:00:00') return "";
-                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
-                break;
-            case 'time': 
-                if($valor == '00:00:00' || $valor == '00:00') return "";
-                break;    
-            case 'text':
-            case 'varchar':
-                if(!$this->keeptags){
-                    $valor = strip_tags($valor, "<b><a><ul><li><ol><i><u>");
-                    if(strlen($valor) <= MAX_STR_IN_LIST) break;
-                    $valor = Resume($valor, MAX_STR_IN_LIST);
-                }
-                break;
-            case 'bit': 
-                $valor = ($valor == 1 || $valor === true)?"Sim":"Não";
-                break;
-            case 'enum':
-                $valor = (isset($dados[$name]['options'][$valor]))?$dados[$name]['options'][$valor]: ucfirst($valor);
-                break;
-            case 'decimal':
-                if(!is_numeric($valor)) break;
-                if(!isset($dados[$name]['size'])) break;
-                $e = explode(',', $dados[$name]['size']);
-                $casas = end($e);
-                if($casas == "") $casas = 2;
-                $valor = number_format($valor, $casas, ',', '.');
-                break;
-        }
-        return trim($valor);
+        
+        $fn = "formatType".ucfirst($dados[$name]["type"]);
+        if(method_exists($this, $fn)){$fn($valor, $name, $dados);}
+        
+        return $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
     }
+            private function formatTypeAddFkeyLink($valor, $dados, $name,$item){
+                $val = trim($valor);
+                if(isset($dados[$name]['fkey']) && array_key_exists("__$name", $item)){
+                    $cod     = $item["__$name"];
+                    $md_link = $dados[$name]['fkey']['model'];
+                    $append  = $this->Html->getActionLinkIfHasPermission("$md_link/show/$cod", $val);
+                    $val     = ($append!= "")?$append:$val;
+                }
+                return $val;
+            }
+    
+            public function formatTypeDate(&$valor){
+                if($valor == '0000-00-00') {return "";}
+                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
+            }
+            
+            public function formatTypeDatetime(&$valor){
+                if($valor == '0000-00-00') {return "";}
+                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
+            }
+            public function formatTypeTimestamp(&$valor){
+                $this->formatTypeDatetime($valor);
+            }
+            public function formatTypeTime(&$valor){
+                if($valor == '00:00:00' || $valor == '00:00') {$valor = "";}
+            }
+            
+            public function formatTypeText(&$valor){
+                if($this->keeptags){return;}
+                $valor = strip_tags($valor, "<b><a><ul><li><ol><i><u>");
+                if(strlen($valor) <= MAX_STR_IN_LIST) {return;}
+                $valor = Resume($valor, MAX_STR_IN_LIST);
+            }
+            public function formatTypeVarchar(&$valor){
+                $this->formatTypeText($valor);
+            }
+            public function formatTypeBit(&$valor){
+                $valor = ($valor == 1 || $valor === true)?"Sim":"Não";
+            }
+            public function formatTypeEnum(&$valor, $name, $dados){
+                $valor = (isset($dados[$name]['options'][$valor]))?$dados[$name]['options'][$valor]: ucfirst($valor);
+            }
+            public function formatTypeDecimal(&$valor, $name, $dados){
+                if(!is_numeric($valor) || !isset($dados[$name]['size'])) {return;}
+                $e      = explode(',', $dados[$name]['size']);
+                $casas  = end($e);
+                if($casas == "") {$casas = 2;}
+                $valor  = number_format($valor, $casas, ',', '.');
+            }
     
     public function form($model, $values = array(), $ajax = true, $url = ""){
         $this->LoadResource('formulario', 'form');

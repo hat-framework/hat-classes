@@ -409,16 +409,10 @@ class Model extends Object
                     }
 
 
-    /*
-     * @Explication
-     * Insere valores no banco de dados
-     * 
-     * @args
-     * $id   o valor da chave primária
-     * $post os valores a serem alterados
-     *
-     * @returns
-     * @boolean: true caso consiga apagar, false caso contrario
+    /**
+     * Insert data in database
+     * @param type $dados data to be inserted in database
+     * @return boolean true if inserts in database otherwise false
      */
     public function inserir($dados){
 
@@ -471,16 +465,12 @@ class Model extends Object
         $this->sindex->indexar($this->model_name, $this->dados, $this->pkey, $dados);
     }
     
-    /*
-     * @Explication
-     * Edita valores no banco de dados
-     * 
-     * @args
-     * $id   o valor da chave primária
-     * $post os valores a serem alterados
-     *
-     * @returns
-     * @boolean: true caso consiga apagar, false caso contrario
+    /**
+     * Edit data in database
+     * @param type $id value of database colum to be changed
+     * @param type $post data
+     * @param type $camp database colum do be changed
+     * @return boolean
      */
     public function editar($id, $post, $camp = ""){
         
@@ -562,24 +552,19 @@ class Model extends Object
                 return $where;
             }
 
-    /*
-     * @Explication
-     * Apaga um item do banco de dados
-     * 
-     * @args
-     * $id o valor da chave primária
-     *
-     * @returns
-     * @boolean: true caso consiga apagar, false caso contrario
-     */
-    
+    /**
+     * Drop data in database
+     * @param type $valor value of database column
+     * @param type $chave database column
+     * @return boolean true if drop da successfully, false otherwise
+     */    
     public function apagar($valor, $chave = ""){
         
         //se não foi enviada uma chave, assume a chave estrangeira
         $this->PrepareFk();
         if($chave == "") {$chave = $this->pkey;}
         
-        $wh = $this->apagarGetWhere($valor, $chave);
+        $wh = $this->apagarGetWhere($chave, $valor);
         if($wh === false){return false;}
         
         //apaga o item
@@ -623,12 +608,9 @@ class Model extends Object
         $this->fknn->set($this->fkmodel->getnn(), $this->model_name);
     }
     
-    /*
-     * @Explication
-     * Valida a classe de acordo com algumas regras definidas na variavel dados
-     *
-     * @returns
-     * @boolean: true caso consiga validar, false caso contrario
+    /**
+     * Check if inserting or editing data is valid
+     * @return boolean true if is valid
      */
     protected function validate(){
         if(false === $this->validadeEmptyPost()){return false;}
@@ -692,12 +674,10 @@ class Model extends Object
     }
 
 
-    /*
-     * @Explication
-     * Associa os dados enviados para a classe
-     *
-     * @returns
-     * @boolean: true caso consiga associar, false caso contrario
+    /**
+     * Prepare data to be inserted.
+     * @param type $edit if data is on edit mode
+     * @return boolean true if data is correctly associated
      */
     protected final function associa($edit = false){
         
@@ -752,7 +732,10 @@ class Model extends Object
                 return false;
             }
     
-    
+    /**
+     * Return last inserted id
+     * @return string
+     */
     public function getLastId(){
         if($this->lastid != ""){ return $this->lastid;}
         $pkey  = $this->pkey;
@@ -784,23 +767,17 @@ class Model extends Object
                 
             }
     
-    /*
-     * @Explication
-     * Retorna o nome da chave primaria da tabela
-     *
-     * @returns
-     * @string: nome da chave primaria
+    /**
+     * return primary key name
+     * @return type
      */
     public function getPkey(){
         return $this->pkey;
     }
     
-    /*
-     * @Explication
-     * Retorna o nome da chave que entitula o modelo
-     *
-     * @returns
-     * @string: nome da coluna com o título a ser exibido para o usuário
+    /**
+     * Return model's title key name
+     * @return type
      */
     public function getModelTitle(){
         $title = "";
@@ -813,9 +790,9 @@ class Model extends Object
         return($title === "")?$this->getPkey():$title;
     }
     
-    /*
-     * @Explication
-     * Retorna os nomes das chaves que podem ser buscadas na tabela
+    /**
+     * Return searchable keys
+     * @return array
      */
     public function getModelSearchableKeys(){
         $searchable=array();
@@ -831,12 +808,9 @@ class Model extends Object
         return(array_keys($searchable));
     }
     
-    /*
-     * @Explication
-     * Retorna o nome da tabela do banco de dados
-     *
-     * @returns
-     * @string: nome da tabela
+    /**
+     * return tablename
+     * @return string
      */
     public function getTable(){
     	return $this->tabela;
@@ -858,12 +832,10 @@ class Model extends Object
         }
         return false;
     }
-        /*
-     * @Explication
-     * Retorna o nome da tabela do banco de dados
-     *
-     * @returns
-     * @string: nome da tabela
+       
+    /**
+     * Return model's array data
+     * @return array
      */
     public function getDados(){
         return $this->blockBecauseFeature()?array():$this->dados;
@@ -951,13 +923,16 @@ class Model extends Object
         return implode("','", $array);
     }
     
-      /**
-     * Gera codigo em base64 dentro do array, e já insere dentro do array se desejar
-     * @param array $arr
-     * @param array $generator Ex: $generator = array(1,2,3,6)
-     * @param mixed $array_unshift . True retorna o array com o codigo no inicio, False retorna apenas o código, String retorna o array com o código na chave $array_unshift
-     * @return mixed array or string
-     */
+    /**
+    * Generate base64 code for pseudo random keys
+    * @param array $arr
+    * @param array $generator Ex: $generator = array(1,2,3,6)
+    * @param mixed $array_unshift . 
+    * True: returns array with code; 
+    * False: returns only generated code; 
+    * String: return an array with generated code in $array_shift index
+    * @return mixed array or string
+    */
    public function genKey($arr,$generator, $array_unshift = false){
        if(!is_array($arr)){return $arr;}
        if(!is_array($generator)){return "";}
