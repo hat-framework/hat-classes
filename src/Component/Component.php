@@ -440,7 +440,8 @@ class Component extends Object{
     }
 
     protected function n1info($title, $link, $chave){
-        $cod  = array_keys($chave); $cod = array_shift($cod);
+        $cod  = array_keys($chave); 
+        $cod  = array_shift($cod);
         $nome = array_shift($chave);
         $link = $this->Html->getLink($link."/$cod/".GetPlainName($nome));
         $this->gui->info("$title: <a href='$link'>$nome</a><br/>");
