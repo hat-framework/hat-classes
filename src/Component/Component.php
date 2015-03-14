@@ -299,7 +299,7 @@ class Component extends Object{
         }
         
         $fn = "formatType".ucfirst($dados[$name]["type"]);
-        if(method_exists($this, $fn)){$fn($valor, $name, $dados);}
+        if(method_exists($this, $fn)){$this->$fn($valor, $name, $dados);}
         
         return $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
     }
