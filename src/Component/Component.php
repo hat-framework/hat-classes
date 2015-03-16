@@ -269,7 +269,7 @@ class Component extends Object{
             $class = end($cl);
             $url   = "$action/$pkey";
         }
-        return $this->Html->getActionLinkIfHasPermission($url, "$name",$class, "");
+        return $this->Html->getActionLinkIfHasPermission($url, "$name",$class);
     }
     
     protected function gerarLink($model, $pkey, $item){
@@ -308,7 +308,7 @@ class Component extends Object{
                 if(isset($dados[$name]['fkey']) && array_key_exists("__$name", $item)){
                     $cod     = $item["__$name"];
                     $md_link = $dados[$name]['fkey']['model'];
-                    $append  = $this->Html->getActionLinkIfHasPermission("$md_link/show/$cod", $val);
+                    $append  = $this->Html->getActionLinkIfHasPermission("$md_link/show/$cod", $val,'', "","","", true);
                     $val     = ($append!= "")?$append:$val;
                 }
                 return $val;
@@ -407,7 +407,7 @@ class Component extends Object{
         $md_link = ($md_var != "")? $md_var: $fkmodel;
         
         $id_model = str_replace("/", "_", $fkmodel);
-        $append = $this->Html->getActionLinkIfHasPermission("$md_link/formulario/ajax", "[+]");
+        $append = $this->Html->getActionLinkIfHasPermission("$md_link/formulario/ajax", "[+]", "", "","","", true);
         if($append!= ""){
             $append = $this->Html->MakeLink("#$id_model", "[+]", "lk_$id_model");
             $this->cbox->formDialog(".lk_$id_model", $fkmodel, $fkeyarr['keys'], $nameOfInput);

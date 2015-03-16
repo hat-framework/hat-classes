@@ -53,7 +53,7 @@ class CComponent extends Object{
         foreach($this->listActions as $name => $action){
             $class = GetPlainName($action);
             $link  = (strstr($action, "/") === false)?"$this->model/$action/$pkey":"$action/$pkey";
-            $url   = $this->Html->getActionLinkIfHasPermission($link, "$name",$class, "");
+            $url   = $this->Html->getActionLinkIfHasPermission($link, "$name",$class, "","","", true);
             if($url == "") continue;
             $v[$name] = $url;
         }
