@@ -205,7 +205,7 @@ class Model extends Object
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
         $cps    = $this->getCampos($campos);
         $ordem  = $order;
-        $this->pag->setJoin($this->db->getJoin());
+        $this->pag->setJoin($this->getJoined());
         $this->pag->setWhere($where);
         $this->pag->Paginacao($this->tabela, $lk, $qtd, $page);
         
@@ -226,7 +226,7 @@ class Model extends Object
 
         $where = ($cod_item == "")?$cod_item : $this->genWhere($campo, $this->pkey, $cod_item);
         $where .= $adwhere;
-        $this->pag->setJoin($this->db->getJoin());
+        $this->pag->setJoin($this->getJoined());
         $this->pag->setWhere($where);
         $this->pag->Paginacao($this->tabela, LINK, 10, 0);
         
@@ -283,7 +283,6 @@ class Model extends Object
         $camps  = $this->getCampos($campos); 
         $where  = $this->genWhere($coluna, $pk, $cod_item);
         $var    = $this->selecionar($camps,$where, "1");
-        //print_r($var);echo $this->db->getSentenca() . "<hr/>";
         return (count($var) === 1)?array_shift($var):$var;
     }
     
@@ -309,15 +308,27 @@ class Model extends Object
         $where = $this->genWhere("$this->tabela`.`$coluna", $pk, $cod_item);
         return $this->selecionar($camps,$where);
     }
+    
+    private $joined = '';
+    private function getJoined(){
+        return $this->joined;
+    }
             
     public function getCampos($campos = array()){
         $ignore_display = false;
-        $camps = $this->getCamposData($campos, $ignore_display);
-        $join  = $this->db->getJoin();
-        $find  = $this->getCamposFounded($camps, $ignore_display);
-        $this->db->addJoin($join);
+        $join           = array();
+        $camps          = $this->getCamposData($campos, $ignore_display);
+        $joinstr        = $this->db->getJoin();
+        $find           = $this->getCamposFounded($camps, $ignore_display, $join);
+        $this->getCamposJoin($joinstr, $join);
         return $find;
     }
+    
+            private function getCamposJoin($joinstr, $join){
+                if(!is_array($join) || empty($join)){return;}
+                $this->joined = implode(' ',$join) . " $joinstr";
+                $this->db->setJoin($this->joined);
+            }
     
             private $sql_function = array("COUNT",'SUM');
             private function getCamposData($campos, &$ignore_display){
@@ -334,10 +345,10 @@ class Model extends Object
                 return $tmp_camps;
             }
             
-            private function getCamposFounded($campos, $ignore_display){
+            private function getCamposFounded($campos, $ignore_display, &$join){
                 $this->db->setJoin("");
-                $used = array($this->tabela => 0);
                 $find = array();
+                $used = array($this->tabela => 0);
                 foreach($campos as $name => $data){
                     if(isset($data['type']) && $data['type'] === 'val' && isset($data['val'])){
                         $find[] = $data['val'];
@@ -349,14 +360,12 @@ class Model extends Object
                         continue;
                     }
                     
-                    $f = $this->getCamposFkey($data, $name,$used);
+                    $f = $this->getCamposFkey($data, $name,$used, $join);
                     $this->addToFounded($f, $find);
                 }
                 return $find;
             }
-            
-            
-                    private function getCamposFkey($data, $name, &$used){
+                    private function getCamposFkey($data, $name, &$used, &$join){
                         extract($data['fkey']);
                         $cardinalidade = $data['fkey']['cardinalidade'];
                         $model         = $data['fkey']['model'];
@@ -373,14 +382,14 @@ class Model extends Object
                             $tabname = "{$tab}_". $used[$tab];
                             $tab = "$tab as $tabname" ;
                         }else {$used[$tab] = 0;}
-                        return $this->getCamposFkeyFounded($keys,$tabname, $tab, $name);
+                        return $this->getCamposFkeyFounded($keys,$tabname, $tab, $name, $join);
                     }
                     
-                            private function getCamposFkeyFounded($keys,$tabname, $tab, $name){
+                            private function getCamposFkeyFounded($keys,$tabname, $tab, $name, &$join){
                                 $find = array();
                                 $k1   = array_shift($keys);
                                 if($k1 !== null) {
-                                    $this->db->join($this->tabela, $tab, array($name), array($k1), "LEFT");
+                                    $join[] = $this->db->join($this->tabela, $tab, array($name), array($k1), "LEFT");
                                     $find[] = "$tabname.".$k1. " AS __$name";
                                 }
                                 
@@ -396,7 +405,6 @@ class Model extends Object
                                     $keyname = isset($dados[$key]['name'])?$dados[$key]['name']:"$name $key";
                                     $find[] = "$tabname.".$key. " AS `$keyname`";
                                 }
-                                
                                 return $find;
                             }
                     
@@ -686,7 +694,6 @@ class Model extends Object
         $this->processEmptyAssociationId($post);
         if(!$this->processEmptyAssociationPost($post)){return false;}
         $this->post = $post;
-       // print_r($this->post); die();
         return true;
     }
             private function checkDataForAssociation(){

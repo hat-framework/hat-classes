@@ -259,36 +259,47 @@ class Object{
         $model  = explode("/",$ClassName);
         $plugin = array_shift($model);
         $modulo = array_shift($model);
-        $class  = array_pop($model);
-        $class  = (($class == "")?$modulo:$class);
-        $path   = implode("/", $model);
-        $path   = ($path == "")? "": $path . "/";
-        
-        $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/classes/$path$class.php";
-        if(!file_exists($folder)){
-            if($throws) {
-                $msg = "O arquivo da classe ($class) não foi encontrada ou não existe";
-                //if(usuario_loginModel::IsWebmaster()){
-                    $msg .= "- Pasta Procurada: $folder";
-                //}
-                throw new \Exception($msg);
-            }
-            $this->$name = NULL;
-            return;
-        }
+        $cls  = array_pop($model);
+        $class  = (($cls == "")?$modulo:$cls);
+        $pathh  = implode("/", $model);
+        $path   = ($pathh == "")? "": "$pathh/";
+        $folder = $this->verifyFolder($plugin, $modulo, $path, $class);
+        if(!$this->validFolder($folder, $throws,$class, $name)){return false;}
         
         $this->LoadConfigFromPlugin($plugin);
         require_once $folder;
 
         if(false === $this->verifyClass($class,$ClassName, $plugin, $throws)){return false;}
-        
-        $this->$name = new $class($vars);
-        if(!is_object($this->$name)){
-            if($throws) throw new \Exception("Não foi possível instanciar a Classe $class");
-            $this->$name = NULL;
-        }
-        return $this->$name;
+        return $this->instantiateObject($name, $vars, $throws, $class);
     }
+    
+            private function verifyFolder($plugin, $modulo, $path, $class){
+                $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/classes/$path$class.php";
+                if(file_exists($folder)){return $folder;}
+                $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/$path$class.php";
+                if(file_exists($folder)){return $folder;}
+                return false;
+            }
+
+            private function validFolder($folder, $throws,$class, $name){
+                if($folder !== false){return true;}
+                if($throws) {
+                    $msg = "O arquivo da classe ($class) não foi encontrada ou não existe - Pasta Procurada: $folder";
+                    throw new \Exception($msg);
+                }
+                $this->$name = NULL;
+                return false;
+
+            }
+
+            private function instantiateObject($name, $vars, $throws, $class){
+                $this->$name = new $class($vars);
+                if(!is_object($this->$name)){
+                    if($throws) {throw new \Exception("Não foi possível instanciar a Classe $class");}
+                    $this->$name = NULL;
+                }
+                return $this->$name;
+            }
     
     private function verifyClass(&$class,$ClassName, $plugin, $throws){
         if(class_exists($class)){return true;}

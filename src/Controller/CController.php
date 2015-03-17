@@ -25,6 +25,7 @@ class CController extends \classes\Controller\Controller {
             $this->registerVar("model", $this->model_name);
             $this->registerVar("component", $this->model_name);
         }
+        $this->LoadModel('plugins/action', 'act');
     }
     
     protected $cod  = "";
@@ -50,7 +51,7 @@ class CController extends \classes\Controller\Controller {
             protected function detectParams(){
                 $autor = \usuario_loginModel::CodUsuario();
                 $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
-                if($this->LoadModel('plugins/action', 'act')->needCode($url)){
+                if(!in_array(CURRENT_ACTION, $this->free_cod) && $this->act->needCode($url)){
                     $this->cod = isset($this->vars[0])?$this->vars[0]:"";
                     $this->manageSessions();
                     $this->prepareItem();
