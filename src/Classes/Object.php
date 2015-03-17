@@ -272,19 +272,24 @@ class Object{
         if(false === $this->verifyClass($class,$ClassName, $plugin, $throws)){return false;}
         return $this->instantiateObject($name, $vars, $throws, $class);
     }
-    
+            private $procurado = array();
             private function verifyFolder($plugin, $modulo, $path, $class){
+                $this->procurado = array();
                 $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/classes/$path$class.php";
                 if(file_exists($folder)){return $folder;}
+                $this->procurado[] = $folder;
+                
                 $folder = Registered::getPluginLocation($plugin,true) . "/$modulo/$path$class.php";
                 if(file_exists($folder)){return $folder;}
+                $this->procurado[] = $folder;
+                
                 return false;
             }
 
             private function validFolder($folder, $throws,$class, $name){
                 if($folder !== false){return true;}
                 if($throws) {
-                    $msg = "O arquivo da classe ($class) não foi encontrada ou não existe - Pasta Procurada: $folder";
+                    $msg = "O arquivo da classe ($class) não foi encontrada ou não existe - Pasta(s) Procurada(s):<br/> ".  implode("<br/>", $this->procurado);
                     throw new \Exception($msg);
                 }
                 $this->$name = NULL;

@@ -560,6 +560,14 @@ class Model extends Object
                 return $where;
             }
 
+    public function simpleDrop($where){
+        if(!$this->db->Delete($this->tabela, $where)){
+            $this->setErrorMessage($this->db->getErrorMessage());
+            return false;
+        }
+        return $this->setSuccessMessage("Conteudo apagado com sucesso!");
+    }
+            
     /**
      * Drop data in database
      * @param type $valor value of database column
