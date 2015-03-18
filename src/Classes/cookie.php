@@ -5,7 +5,7 @@ class cookie{
 
     public static function create($cookiename, $time = 0){
         $ckname = self::getCookieName($cookiename);
-        self::setCookie($ckname, '');
+        self::setCookie($ckname, '', $time);
     }
     
     public static function destroy($cookiename){

@@ -16,6 +16,7 @@ abstract class system extends Object {
     public function  __construct() {
         try{
             $this->LoadModel('usuario/login', 'lobj');
+            $this->LoadModel('usuario/tag/usertag', 'utag');
         }  catch (\Exception $e){
             die($e->getMessage());
         }
@@ -131,11 +132,27 @@ abstract class system extends Object {
         $page .= ($this->controller != "")?"/$this->controller/":"";
         $page .= ($this->action != "")    ?"$this->action/":"";
 
-        if (!defined("CURRENT_MODULE"))     define("CURRENT_MODULE"    , $this->modulo);
-        if (!defined("CURRENT_CONTROLLER")) define("CURRENT_CONTROLLER", $this->controller);
-        if (!defined("LINK"))               define("LINK"              , CURRENT_MODULE . "/".CURRENT_CONTROLLER);
+        if (!defined("CURRENT_MODULE"))     {define("CURRENT_MODULE"    , $this->modulo);}
+        if (!defined("CURRENT_CONTROLLER")) {define("CURRENT_CONTROLLER", $this->controller);}
+        if (!defined("LINK"))               {define("LINK"              , CURRENT_MODULE . "/".CURRENT_CONTROLLER);}
         $this->setMenu();
-        
+        $this->setTags();        
+    }
+    
+    private function setTags(){
+        if(!isset($this->utag) || $this->utag === null){return;}
+        try{
+            $cod_usuario = \usuario_loginModel::CodUsuario();
+            if($cod_usuario == 0){return;}
+            $this->utag->addTag(array(
+                'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo"
+                ),$cod_usuario
+            );
+            $this->utag->addTag(array(
+                'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo ". ucfirst(CURRENT_MODULE)
+                ), $cod_usuario
+            );
+        } catch (Exception $ex) {}
     }
     
     public function pagenotfound($method, $extras = ""){
