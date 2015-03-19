@@ -894,14 +894,20 @@ class Model extends Object
     }
     
     public function join($modeldst, $key_src = "", $key_dst = "", $join = 'LEFT', $modelsrc = ''){
+        $alias = "";
+        if(is_array($modeldst)){
+            $alias    = $modeldst['alias'];
+            $modeldst = $modeldst['model'];
+        }
         $tb   = $this->LoadModel($modeldst, 'tmp_model')->getTable();
+        if($alias !== ""){$tb = "$tb as $alias";}
         $ksrc = ($key_src == "")?$this->pkey:$key_src;
         $kdst = $this->getKeyDst($key_dst);
         if(!is_array($ksrc)){$ksrc = array($ksrc);}
         if(!is_array($kdst)){$kdst = array($kdst);}
         $tabela = ($modelsrc === "")?$this->tabela:$this->LoadModel($modelsrc, 'tmp_model')->getTable();
         $this->db->Join($tabela, $tb, $ksrc, $kdst, $join);
-        return $tb;
+        return ($alias === "")?$tb:$alias;
     }
     
             private function getKeyDst($kdst){
