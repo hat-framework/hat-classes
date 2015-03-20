@@ -4,12 +4,14 @@ class GUI extends \classes\Classes\Object{
     public $description = '';
     public $icon = '';
     
-    public function title($title){
-        if($title != "") {echo "<h1 class='title'>$title</h1>";}
+    public function title($title, $attrs = array()){
+        $attr = $this->prepareAttrs($attrs);
+        if($title != "") {echo "<h1 class='title' $attr>$title</h1>";}
     }
     
-    public function subtitle($title){
-        if($title != "") {echo "<h2 class='subtitle'>$title</h2>";}
+    public function subtitle($title, $attrs = array()){
+        $attr = $this->prepareAttrs($attrs);
+        if($title != "") {echo "<h2 class='subtitle' $attr>$title</h2>";}
     }
     
     public function panelSubtitle($title) {
@@ -32,18 +34,20 @@ class GUI extends \classes\Classes\Object{
         return $this;
     }
 
-    public function infotitle($title){
-        if($title != "") {echo "<h4 class='infotitle'>$title</h4>";}
+    public function infotitle($title, $attrs = array()){
+        $attr = $this->prepareAttrs($attrs);
+        if($title != "") {echo "<h4 class='infotitle' $attr>$title</h4>";}
         return $this;
     }
     
-    public function label($label, $id = "", $class=''){
-        if($label != "") {echo "<span class='label $class' id='$id'>$label</span>";}
+    public function label($label, $id = "", $class='', $attrs = array()){
+        $attr = $this->prepareAttrs($attrs);
+        if($label != "") {echo "<span class='label $class' id='$id' $attr>$label</span>";}
         return $this;
     }
     
-    public function box($title, $content, $class = 'box'){
-        $this->opendiv('', $class);
+    public function box($title, $content, $class = 'box', $attrs = array()){
+        $this->opendiv('', $class,$attrs);
             $this->label($title, '', 'box_label');
             $this->paragraph($content, 'box_paragraph');
         $this->closediv();
@@ -90,11 +94,11 @@ class GUI extends \classes\Classes\Object{
         return $this;
     }
     
-    public function opendiv($id = "", $class=""){
+    public function opendiv($id = "", $class="", $attrs = array()){
         
         if($id != ""){
-            $id = GetPlainName($id);
-            $id = "id='$id'";
+            $i  = GetPlainName($id);
+            $id = "id='$i'";
         }
         
         if($class != ''){
@@ -106,7 +110,9 @@ class GUI extends \classes\Classes\Object{
             $class = "class='".implode(" ", $cls)."'";
         }
         
-        echo "<div $id $class>";
+        $attr = $this->prepareAttrs($attrs);
+        
+        echo "<div $id $class $attr>";
         return $this;
     }
     
@@ -141,24 +147,39 @@ class GUI extends \classes\Classes\Object{
     }
     
     public function openPanel($class, $id = ''){
-        $this->opendiv($id, "panel panel-info $class");
+        $panel = \classes\Classes\Template::getClass("panel", "default");
+        if(is_array($panel)){$panel = $panel['panel_class'];}
+        $this->opendiv($id, "panel panel-$panel $class");
         return $this;
     }
     
     public function panelHeader($title, $icon = ''){
-        $this->opendiv('', "panel-heading");
+        $panel = \classes\Classes\Template::getClass("panel", "panel-heading");
+        if(is_array($panel)){$panel = $panel['header'];}
+        $this->opendiv('', $panel);
             $icon = ($icon !== "")?"<i class='$icon'></i>":"";
             $this->infotitle("$icon $title");
         return $this->closediv();
     }
     
     public function panelBody($content){
-        $this->opendiv('', "panel-body");
+        $panel = \classes\Classes\Template::getClass("panel", "panel-body");
+        if(is_array($panel)){$panel = $panel['body'];}
+        $this->opendiv('', $panel);
         echo $content;
         return $this->closediv();
     }
     
     public function closePanel(){
         return $this->closediv();
+    }
+    
+    private function prepareAttrs($attrs){
+        if(empty($attrs)){return "";}
+        $attr = '';
+        foreach($attrs as $name => $val){
+            $attr .= ' '.$name.'="'.$val.'"';
+        }
+        return $attr;
     }
 }
