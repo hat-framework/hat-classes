@@ -73,14 +73,27 @@ class widget extends \classes\Classes\Object{
 
 
     private function getLinkPaginator(){
-        $action     = $this->actionPaginator;
-        if($action == ""){
-            $action = $this->Html->getLink(CURRENT_URL, true, true);
-            $action.= "&widget=".self::whoAmI();
-            $action.= "&wd_page=";
-        }
+        if($this->actionPaginator != ""){return $this->actionPaginator;}
+        $action  = $this->Html->getLink(CURRENT_URL, true, true);
+        $action .= $this->getActionParams();
         return $action;
     }
+    
+            private function getActionParams(){
+                $get    = $_GET;
+                $action = "";
+                if(!empty($get)){
+                    foreach($get as $name => $val){
+                        $val = trim($val);
+                        if(in_array($name, array('widget','wd_page','enviar','url'))){continue;}
+                        if($val === ""){continue;}
+                        $action .= "&$name=$val";
+                    }
+                }
+                $action.= "&widget=".self::whoAmI();
+                $action.= "&wd_page=";
+                return $action;
+            }
     
     public function widget(){
         $this->init();
