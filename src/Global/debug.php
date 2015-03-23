@@ -125,7 +125,8 @@ function print_in_table($array){
     echo "<hr/>";
 }
 
-function debugWebmaster($str){
-    if(!usuario_loginModel::IsWebmaster()) return;
+function debugWebmaster($str, $die = false){
+    if(!usuario_loginModel::IsWebmaster()) {return;}
     is_array($str)?  debugarray($str):echoBr($str);
+    if($die){die("<hr/>");}
 }
