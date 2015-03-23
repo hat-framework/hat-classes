@@ -176,6 +176,7 @@ class GUI extends \classes\Classes\Object{
     
     private function prepareAttrs($attrs){
         if(empty($attrs)){return "";}
+        if(!is_array($attrs)){return $attrs;}
         $attr = '';
         foreach($attrs as $name => $val){
             $attr .= ' '.$name.'="'.$val.'"';
