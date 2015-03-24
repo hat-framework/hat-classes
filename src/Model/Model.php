@@ -189,10 +189,11 @@ class Model extends Object
                    private function getSublistWherePkey($cod_pkey){
                         if($cod_pkey == ""){return "";}
                         $dados = $this->md->getDados();
+                        $tb    = $this->md->getTable();
                         foreach($dados as $nm => $d){
                             if(!isset($d['fkey'])) {continue;}
                             if($d['fkey']['model'] != $this->model_name){continue;}
-                            return ("$nm = '$cod_pkey'");
+                            return ("$tb.$nm = '$cod_pkey'");
                         }
                    }
     

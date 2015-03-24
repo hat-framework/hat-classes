@@ -234,7 +234,7 @@ class CController extends \classes\Controller\Controller {
         $link = $this->model_name ."/sublist/$this->cod/$campo";
         $this->item[$campo] = $this->model->getSublist($page, $campo, $link, $this->cod);
         
-        if($this->item[$campo] === false) {die('faaalse');Redirect (LINK."/show");}
+        if($this->item[$campo] === false) {Redirect (LINK."/show/$this->cod");}
         $this->registerVar("item", $this->item);
         $this->registerVar("comp_action" , 'show');
     	$this->display($this->sublistview);
