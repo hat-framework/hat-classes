@@ -102,7 +102,7 @@ class widget extends \classes\Classes\Object{
             return;
         }
         $itens = $this->getItens();
-        $this->draw($itens);
+        return $this->draw($itens);
     }
     
     private function drawDropper(){
@@ -259,7 +259,8 @@ class widget extends \classes\Classes\Object{
     
     public static function executeWidgets($widgets){
         if(empty($widgets)) return;
-        $obj = new \classes\Classes\Object();
+        $obj      = new \classes\Classes\Object();
+        $response = array();
         foreach($widgets as $classname => $options){
             $widget = $obj->LoadClassFromPlugin($classname, 'prod', false);
             if(!is_object($widget)){continue;}
@@ -273,8 +274,12 @@ class widget extends \classes\Classes\Object{
                     }
                 }
             }
-            $widget->widget();
+            $res = $widget->widget();
+            if(is_array($res) || trim($res) !== ""){
+                $response[$classname] = $res;
+            }
         }
+        return $response;
     }
     
     public function openWidget($id = "", $adicional_title = ''){

@@ -11,10 +11,8 @@ class ShowFk1n extends ShowFkInterface{
 
         $link       = array_shift($keys);
         $valor      = array_shift($var);
-        $url        = $this->Html->getActionLinkIfHasPermission("$fkmodel/show/$link", $valor);
+        $url        = $this->Html->getActionLinkIfHasPermission("$fkmodel/show/$link", $valor, "", "", "", "", true);
         
         if($url != "")$this->cont->setVar($url);
     }
 }
-
-?>

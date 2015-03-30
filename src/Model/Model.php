@@ -439,7 +439,7 @@ class Model extends Object
 
         //associa os dados
         if(!$this->associa()) {return false;}
-
+        
         //insere os dados
         $this->lastid = $this->db->Insert($this->tabela, $this->post);
         if(!$this->InsertionProcessLastId($dados)){return false;}
@@ -643,9 +643,12 @@ class Model extends Object
             
             private $invalid_pkeys = array(0,'0','');
             private function validateUnsetPkey(){
-                if(is_array($this->pkey)){return;}
-                if(!isset($this->post[$this->pkey])){return;}
-                if(!in_array($this->post[$this->pkey], $this->invalid_pkeys)){return;}
+                if(
+                   is_array($this->pkey) || 
+                   !isset($this->post[$this->pkey]) ||
+                   !in_array($this->post[$this->pkey], $this->invalid_pkeys) ||
+                   (!isset($this->dados[$this->pkey]['ai']) || $this->dados[$this->pkey]['ai'] !== true)
+                ){return;}
                 unset($this->post[$this->pkey]);
             }
             

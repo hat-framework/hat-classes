@@ -8,6 +8,7 @@ class Component extends Object{
     
     protected $showlabel               = true;
     public    $list_in_table           = false;
+    protected $drawShowInTable         = true;
     protected $append_name             = "";
     protected $gui                     = null;
     protected $append_header           = "";
@@ -366,6 +367,7 @@ class Component extends Object{
         $s->setAppendName($this->append_name);
         $s->setShowlabel($this->showlabel);
         $this->dados = $s->loadDados($model);
+        if($this->drawShowInTable){$s->enableTablePrint();}
         $s->show($model, $item);
     }
     
