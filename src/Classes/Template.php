@@ -99,29 +99,18 @@ class Template extends Object{
     }
     
     private function load($view){
-        if(!array_key_exists($view, $this->views))  return;
-        if(is_array($this->vars)) extract($this->vars);
-        $tmp  = $this->views[$view];
-        $view = explode("/", $tmp);
-        $module     = array_shift($view);
-        $controller = array_shift($view);
-        $view		= implode("/", $view);
+        if(!array_key_exists($view, $this->views)){return;}
+        if(is_array($this->vars)) {extract($this->vars);}
+        $tmp        = $this->views[$view];
+        $vieww      = explode("/", $tmp);
+        $module     = array_shift($vieww);
+        $controller = array_shift($vieww);
+        $viewname   = implode("/", $vieww);
         
-        $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.html";
         try {
-            if(file_exists($file))
-                require_once $file ;
-            else{
-                $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.phtml";
-                if(file_exists($file)){
-                    require_once $file ;
-                }
-                else{
-                    if(is_string($tmp) && file_exists($tmp)){
-                        require_once $tmp; ;
-                    }
-                }
-            }
+            $file = $this->getViewFileName($module, $controller, $viewname, $tmp);
+            if(trim($file) === ""){return;}
+            require_once $file;
         } catch (\Exception $exc) {
             echo "<div class='erro'>" .$exc->getMessage() . "</div>";
             if(DEBUG){
@@ -129,9 +118,31 @@ class Template extends Object{
                 echo "Linha:"   .$exc->getLine() . "<br/><hr/>";
             }
         }
-
-        
     }
+    
+            private function getViewFileName($module, $controller, $view, $tmp){
+                $file = DIR_BASIC . "/extensions/".CURRENT_MODULE."/".CURRENT_CONTROLLER."/$view/{$view}View.phtml";
+                getTrueDir($file);
+                if(file_exists($file)){
+                    return $file ;
+                }
+                
+                $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.html";
+                if(file_exists($file)){
+                    return $file ;
+                }
+                
+                $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.phtml";
+                if(file_exists($file)){
+                    return $file ;
+                }
+                
+                if(is_string($tmp) && file_exists($tmp)){
+                    return $tmp;
+                }
+                    
+                
+            }
     
     private function loadTags($tag){
         if(array_key_exists($tag, $this->tags)){

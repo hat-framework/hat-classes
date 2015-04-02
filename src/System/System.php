@@ -23,76 +23,118 @@ abstract class system extends Object {
         
         $this->init();
     }
-
+    
     public function run(){
-        
         $this->LoadUserMenu();
         $this->start();
-        if(!$this->PathExists($this->modulo, $this->controller, $this->action)){
-             $this->pagenotfound(__METHOD__, "Arquivo ($this->file) não encontrado");
-        }
-        require_once $this->file;
-
-        //verifica se a classe existe
-        $controlle = $this->controller . $this->type; 
-        if(!class_exists($controlle)){
-            $this->pagenotfound(__METHOD__, "Classe ($controlle) não encontrada");
-        }
-
-        //verifica se o método existe
-        $ajax = false;
-        if(isset($this->vars[0])){
-            if($this->vars[0] == 'ajax'){
-                $ajax = true;
-                array_shift($this->vars);
-            }
-        }
         
-        $app = "";
-        if($this->action == "app"){
-            if(isset($this->vars[1])){
+        $controlle = $this->getController();
+        $ajax      = $this->ajaxCheck();
+        $app       = $this->appCheck();
+        $this->loadController($controlle, $app, $ajax);
+        $action    = $this->checkAction();
+        $this->initializeCTRL($action);
+        $this->plloader();
+        $this->callAction($action);
+    }
+    
+            private function ajaxCheck(){
+                if(!isset($this->vars[0]) || $this->vars[0] !== 'ajax'){
+                    define('AJAX_ENABLED', false);
+                    return false;
+                }
+                array_shift($this->vars);
+                define('AJAX_ENABLED', true);
+                return true;
+            }
+            
+            private function getController(){
+                if(!$this->PathExists($this->modulo, $this->controller, $this->action)){
+                    $this->pagenotfound(__METHOD__, "Arquivo ($this->file) não encontrado");
+                }
+                require_once $this->file;
+
+                //verifica se a classe existe
+                $controlle = $this->controller . $this->type; 
+                if(!class_exists($controlle)){
+                    $this->pagenotfound(__METHOD__, "Classe ($controlle) não encontrada");
+                }
+                return $controlle;
+            }
+            
+            private function appCheck(){
+                if($this->action !== "app" || !isset($this->vars[1])){
+                    return '';
+                }
                 $app = $this->vars[1];
                 unset($this->vars[1]);
+                return $app;
             }
-        }
-        define('AJAX_ENABLED', $ajax);
-        $class = new $controlle($this->vars);
-        $class->setCurrentApp($app);
-        if($ajax)$class->enableAjax();
-        $action = $this->action;
-        
-        if(!method_exists($class, $action)){
-            array_push($this->vars, $action);
-            $class->setVars($this->vars);
-            $action = "index";
-        }
-        $class->setVars($this->newvars);
-        $class->setTemplate($this->template);
+            
+            private function loadController($controller, $app, $ajax){
+                $this->class = new $controller($this->vars);
+                $this->class->setCurrentApp($app);
+                if($ajax){$this->class->enableAjax();}
+            }
+            
+            private function checkAction(){
+                $action    = $this->action;
+                if(!method_exists($this->class, $action)){
+                    array_push($this->vars, $action);
+                    $this->class->setVars($this->vars);
+                    $action = "index";
+                }
+                return $action;
+            }
+            
+            public function initializeCTRL($action){
+                $this->class->setVars($this->newvars);
+                $this->class->setTemplate($this->template);
+                if(method_exists($this->class, 'setMenu')) {$this->class->setMenu();}
 
-        if(method_exists($class, 'setMenu')) $class->setMenu();
-
-        //define a constante da página atual
-        //$act = ($action == "index")?"":$action . "/";
-        $act = $action . "/";
-        $page = "$this->modulo/$this->controller/$act";
-        if (!defined("CURRENT_CANONICAL_PAGE")) {define("CURRENT_CANONICAL_PAGE"  , "$this->modulo/$this->controller/$action");}
-        if (!defined("CURRENT_PAGE"))           {define("CURRENT_PAGE"  , $page);}
-        if (!defined("CURRENT_ACTION"))         {define("CURRENT_ACTION", $action);}
-        if(is_object($this->plloader)){
-            if(is_admin) $this->plloader->beforeAdminLoad();
-            else $this->plloader->beforeCommonLoad($this->newvars);
-            $this->setVars($this->plloader->getVars());
-        }
-        $class->setVars($this->newvars);
-        $this->history();
-        $class->AfterLoad();
-        $this->security($class, $action);
-        $class->BeforeLoad();
-        $class->setBreadcrumb();
-        if(is_object($this->plloader)){$this->plloader->AfterExecute($this->newvars);}
-        $class->$action();
-        $class->BeforeExecute();
-    }
+                //define a constante da página atual
+                $act  = $action . "/";
+                $page = "$this->modulo/$this->controller/$act";
+                if (!defined("CURRENT_CANONICAL_PAGE")) {define("CURRENT_CANONICAL_PAGE"  , "$this->modulo/$this->controller/$action");}
+                if (!defined("CURRENT_PAGE"))           {define("CURRENT_PAGE"  , $page);}
+                if (!defined("CURRENT_ACTION"))         {define("CURRENT_ACTION", $action);}
+            }
+            
+            private function plloader(){
+                if(!is_object($this->plloader)){return;}
+                if(is_admin) {$this->plloader->beforeAdminLoad();}
+                else {$this->plloader->beforeCommonLoad($this->newvars);}
+                $this->setVars($this->plloader->getVars());
+            }
+            
+            private function callAction($action){
+                if($this->callExtension($action) === true){return;}
+                $this->class->setVars($this->newvars);
+                $this->history();
+                $this->class->AfterLoad();
+                $this->security($this->class, $action);
+                $this->class->BeforeLoad();
+                $this->class->setBreadcrumb();
+                if(is_object($this->plloader)){$this->plloader->AfterExecute($this->newvars);}
+                $this->class->$action();
+                $this->class->BeforeExecute();
+            }
+            
+            private function callExtension($action){
+                $class = "{$action}Action";
+                $dir   = DIR_BASIC . "/extensions/".CURRENT_CANONICAL_PAGE."/$class.php";
+                getTrueDir($dir);
+                if(!file_exists($dir)){return false;}
+                require_once $dir;
+                
+                if(!class_exists($class, false)){return false;}
+                
+                $obj = new $class();
+                if(!method_exists($obj, 'execute')){return false;}
+                $this->security($this->class, $action);
+                $obj->execute($this->newvars);
+                return true;
+            }
     
     public function setVars($vars){
         $this->newvars = array_merge($this->newvars, $vars);
