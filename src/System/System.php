@@ -132,6 +132,7 @@ abstract class system extends Object {
                 $obj = new $class();
                 if(!method_exists($obj, 'execute')){return false;}
                 $this->security($this->class, $action);
+                $obj->setController($this->class);
                 $obj->execute($this->newvars);
                 return true;
             }

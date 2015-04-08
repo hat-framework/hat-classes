@@ -7,6 +7,7 @@ class Action extends \classes\Classes\Object{
     private   $tags 	 = array();   
     private   $template	 = "";
     private   $ajax 	 = false;
+    protected $ctrl      = null;
     public final function display($action, $vars = array()){
         //seta as variaveis
         $this->setVars($vars);
@@ -27,5 +28,18 @@ class Action extends \classes\Classes\Object{
     
     public final function getVars(){
         return $this->variaveis;
+    }
+    
+    public function setController($ctrl){
+        $this->ctrl = $ctrl;
+    }
+    
+    public function callCtrlAction($action, $vars){
+        $this->ctrl->setVars($vars);
+        $this->ctrl->AfterLoad();
+        $this->ctrl->BeforeLoad();
+        $this->ctrl->setBreadcrumb();
+        $this->ctrl->$action();
+        $this->ctrl->BeforeExecute();
     }
 }
