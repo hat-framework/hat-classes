@@ -1,7 +1,7 @@
 <?php
 
 namespace classes\Controller;
-class Action extends \classes\Classes\Object{
+abstract class Action extends \classes\Classes\Object{
     
     protected $variaveis = array();
     private   $tags 	 = array();   
@@ -20,6 +20,8 @@ class Action extends \classes\Classes\Object{
         $this->view->execute($action);
     }
     
+    abstract public function execute($vars);
+
     public final function setVars($vars){
         if(is_array($vars) && !empty($vars)){
             $this->variaveis = array_merge($vars, $this->variaveis);
@@ -34,11 +36,12 @@ class Action extends \classes\Classes\Object{
         $this->ctrl = $ctrl;
     }
     
-    public function callCtrlAction($action, $vars){
+    public function callCtrlAction($action, $vars, $view = ""){
         $this->ctrl->setVars($vars);
         $this->ctrl->AfterLoad();
         $this->ctrl->BeforeLoad();
         $this->ctrl->setBreadcrumb();
+        $this->ctrl->setViewName($view);
         $this->ctrl->$action();
         $this->ctrl->BeforeExecute();
     }

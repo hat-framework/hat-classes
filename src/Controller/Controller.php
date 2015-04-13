@@ -65,6 +65,11 @@ abstract class Controller extends Object {
             $this->template = $template;
         }
         
+        private $viewname = "";
+        public function setViewName($viewname){
+            $this->viewname = $viewname;
+        }
+        
         public final function display($action, $vars = array()){
         
             //seta as variaveis
@@ -75,6 +80,7 @@ abstract class Controller extends Object {
             $this->view->setTags($this->tags);
             $this->view->setTemplate($this->template);
             if($this->ajax) $this->view->enableAjax();
+            if($this->viewname !== ''){$action = $this->viewname;}
             $this->view->execute($action);
         }
         

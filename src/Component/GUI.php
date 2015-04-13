@@ -162,10 +162,18 @@ class GUI extends \classes\Classes\Object{
         return $this->closediv();
     }
     
-    public function panelBody($content){
+    public function panelBodyOpen(){
         $panel = \classes\Classes\Template::getClass("panel", "panel-body");
         if(is_array($panel)){$panel = $panel['body'];}
-        $this->opendiv('', $panel);
+        return $this->opendiv('', $panel);
+    }
+    
+    public function panelBodyClose(){
+        return $this->closediv();
+    }
+    
+    public function panelBody($content){
+        $this->panelBodyOpen();
         echo $content;
         return $this->closediv();
     }

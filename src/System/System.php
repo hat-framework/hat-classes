@@ -31,10 +31,12 @@ abstract class system extends Object {
         $controlle = $this->getController();
         $ajax      = $this->ajaxCheck();
         $app       = $this->appCheck();
+        $this->plloader();
         $this->loadController($controlle, $app, $ajax);
+        if(true === $this->callExtension($this->action)){return;}
+        
         $action    = $this->checkAction();
         $this->initializeCTRL($action);
-        $this->plloader();
         $this->callAction($action);
     }
     
@@ -91,13 +93,7 @@ abstract class system extends Object {
                 $this->class->setVars($this->newvars);
                 $this->class->setTemplate($this->template);
                 if(method_exists($this->class, 'setMenu')) {$this->class->setMenu();}
-
-                //define a constante da página atual
-                $act  = $action . "/";
-                $page = "$this->modulo/$this->controller/$act";
-                if (!defined("CURRENT_CANONICAL_PAGE")) {define("CURRENT_CANONICAL_PAGE"  , "$this->modulo/$this->controller/$action");}
-                if (!defined("CURRENT_PAGE"))           {define("CURRENT_PAGE"  , $page);}
-                if (!defined("CURRENT_ACTION"))         {define("CURRENT_ACTION", $action);}
+                $this->defineConstants($action);
             }
             
             private function plloader(){
@@ -122,19 +118,29 @@ abstract class system extends Object {
             
             private function callExtension($action){
                 $class = "{$action}Action";
-                $dir   = DIR_BASIC . "/extensions/".CURRENT_CANONICAL_PAGE."/$class.php";
+                $dir   = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
                 getTrueDir($dir);
                 if(!file_exists($dir)){return false;}
                 require_once $dir;
-                
                 if(!class_exists($class, false)){return false;}
                 
                 $obj = new $class();
                 if(!method_exists($obj, 'execute')){return false;}
+                $this->defineConstants($action);
                 $this->security($this->class, $action);
                 $obj->setController($this->class);
                 $obj->execute($this->newvars);
                 return true;
+            }
+            
+            private function defineConstants($action){
+                //define a constante da página atual
+                $act  = $action . "/";
+                $page = "$this->modulo/$this->controller/$act";
+                
+                if (!defined("CURRENT_CANONICAL_PAGE")) {define("CURRENT_CANONICAL_PAGE"  , "$this->modulo/$this->controller/$action");}
+                if (!defined("CURRENT_PAGE"))           {define("CURRENT_PAGE"  , $page);}
+                if (!defined("CURRENT_ACTION"))         {define("CURRENT_ACTION", $action);}
             }
     
     public function setVars($vars){
@@ -211,25 +217,23 @@ abstract class system extends Object {
     public function security($class, $action){
         $has = $this->lobj->has_permission_alterada();
         $this->lobj->setLastAccessOfUser();
-        if($this->controller == "") $this->controller = 'index';
+        if($this->controller == "") {$this->controller = 'index';}
         $action_name = "$this->modulo/$this->controller/$action";
         \usuario_loginModel::user_action_log();
         $this->denyExternNonPublicRequisition($action_name);
         $act_temp    = $action_name;
         $this->LoadModel('usuario/perfil', 'perm');
         $perm = $this->perm->hasPermission($act_temp, true, $has);
-        if(!defined('PERMISSION')) define("PERMISSION", $perm);
+        if(!defined('PERMISSION')) {define("PERMISSION", $perm);}
         if($perm == 'n'){
-            if($this->lobj->IsLoged()) throw new \classes\Exceptions\AcessDeniedException();
-            else $this->lobj->needLogin();
-        }else{
-            $this->LoadModel('plugins/action', 'act');
-            $this->act->geraMenu($this->modulo, $action_name); 
-            if($perm == "p") {    
-                if(!$class->hasPermission($action)) throw new \classes\Exceptions\AcessDeniedException();
-            }
+            if($this->lobj->IsLoged()) {throw new \classes\Exceptions\AcessDeniedException();}
+            else {$this->lobj->needLogin();}
+            return;
         }
-        
+        $this->LoadModel('plugins/action', 'act');
+        $this->act->geraMenu($this->modulo, $action_name); 
+        if($perm != "p") {return;}
+        if(!$class->hasPermission($action)) {throw new \classes\Exceptions\AcessDeniedException();}
     }
     
     private function denyExternNonPublicRequisition($action_name){

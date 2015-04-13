@@ -28,13 +28,22 @@ class CController extends \classes\Controller\Controller {
         $this->LoadModel('plugins/action', 'act');
     }
     
-    protected $cod  = "";
-    protected $item = array();
-    protected $free_cod = array('index', 'formulario', 'grid');
+    protected $cod             = "";
+    protected $current_action  = "";
+    protected $item            = array();
+    protected $free_cod        = array('index', 'formulario', 'grid');
     protected $blocked_actions = array();
     protected $redirect_link   = array();
 
+    protected function getCanonicalCurrentAction(&$action){        
+        while(is_numeric($action[strlen($action)-1])){
+            $action = substr($action, 0, strlen($action)-1);
+        }
+    }
+    
     public function AfterLoad(){
+        $this->current_action = CURRENT_ACTION;
+        $this->getCanonicalCurrentAction($this->current_action);
         $this->checkUrl();
         $this->detectParams();
         $this->processSessions();
@@ -43,7 +52,7 @@ class CController extends \classes\Controller\Controller {
     }
     
             private function checkUrl(){
-                if(!in_array(CURRENT_ACTION, $this->blocked_actions)){return;}
+                if(!in_array($this->current_action, $this->blocked_actions)){return;}
                 $url =(!in_array("index", $this->blocked_actions))?$this->model_name:"";
                 Redirect($url);
             }
@@ -51,7 +60,7 @@ class CController extends \classes\Controller\Controller {
             protected function detectParams(){
                 $autor = \usuario_loginModel::CodUsuario();
                 $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
-                if(!in_array(CURRENT_ACTION, $this->free_cod) && $this->act->needCode($url)){
+                if(!in_array($this->current_action, $this->free_cod) && $this->act->needCode($url)){
                     $this->cod = isset($this->vars[0])?$this->vars[0]:"";
                     $this->manageSessions();
                     $this->prepareItem();
@@ -59,7 +68,7 @@ class CController extends \classes\Controller\Controller {
                     $this->generateItemTags();
                     return $this->registerItem();
                 }
-                $this->addToFreeCod(CURRENT_ACTION);
+                $this->addToFreeCod($this->current_action);
                 if(isset($_SESSION[$this->model_name])) {unset($_SESSION[$this->model_name]);}
                 $this->model->setRestriction($this->autor_camp, $autor);
             }
@@ -305,7 +314,7 @@ class CController extends \classes\Controller\Controller {
             if($status == true && !$this->prevent_red){
                 if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $messages);}
                 $id = is_array($id)?implode("/", $id):$id;
-                $page = (array_key_exists(CURRENT_ACTION, $this->redirect_link))?$this->redirect_link[CURRENT_ACTION]:LINK."/show/$id";
+                $page = (array_key_exists($this->current_action, $this->redirect_link))?$this->redirect_link[$this->current_action]:LINK."/show/$id";
                 Redirect($page, 0, "", $vars);
             }
         }
