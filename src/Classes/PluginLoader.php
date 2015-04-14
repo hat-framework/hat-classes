@@ -22,6 +22,7 @@ abstract class PluginLoader extends Object{
         return $this->vars;
     }
     
+    public function AfterRegister($vars){}
     abstract public function setCommonVars();
     public function beforeCommonLoad($vars){}
     
@@ -30,5 +31,3 @@ abstract class PluginLoader extends Object{
     
     public function AfterExecute($vars){}
 }
-
-?>

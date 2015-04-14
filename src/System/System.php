@@ -105,6 +105,7 @@ abstract class system extends Object {
             
             private function callAction($action){
                 if($this->callExtension($action) === true){return;}
+                if(is_object($this->plloader)){$this->plloader->AfterRegister($this->newvars);}
                 $this->class->setVars($this->newvars);
                 $this->history();
                 $this->class->AfterLoad();
