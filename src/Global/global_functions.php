@@ -175,13 +175,32 @@ function sendEmailToWebmasters($assunto, $msg){
     $emails          = $obj->LoadModel('usuario/login', 'uboj')->getWebmastersMail();
     if(empty($emails)){
         \classes\Utils\Log::save("system/mail/error", "Nenhum webmaster encontrado no método getWebmastersMail");
-        return;
+        return false;
     }
     if(false == $mail->sendMail($assunto, $msg, $emails)){
         \classes\Utils\Log::save("system/mail/error", 
             "<div class='email_trouble' style='border:1px solid red;'>"
             ."<h2>$assunto</h2><div class='msg'><p>$msg</p></div></div><hr/>");
+        return false;
     }
+    return true;
+}
+
+function sendWebMasterEmailAlert($alertName, $dados = ""){
+    $obj = new \classes\Classes\Object();
+    if($obj === null || !is_object($obj)){return false;}
+    
+    $obj->LoadClassFromPlugin($alertName, 'alert_obj', false, $dados);
+    if($obj->alert_obj === null || !is_object($obj->alert_obj)){
+        sendEmailToWebmasters("[Alert] Erro ao enviar Alerta", "O alerta $alertName foi acionado mas não foi encontrado!");
+        return false;
+    }
+    
+    $title   = $obj->alert_obj->getAlertMailTitle();
+    $message = $obj->alert_obj->getAlertMailMessage();
+    if(trim($message) === ""){return false;}
+    if(trim($title) === ""){$title = "Sem Assunto";}
+    return sendEmailToWebmasters("[Alert] $title", $message);
 }
 
 function genericException($erro, $msg){
