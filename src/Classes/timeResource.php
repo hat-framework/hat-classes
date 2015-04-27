@@ -17,8 +17,8 @@ class timeResource{
             case 'F' : $type = "l"; break;
             default:   $type = "D";
         }
-        $d = ($d == "")?date("Y-m-d H:i:s"):$d;
-        return date($type, self::Timestamp2Time($d));
+        $d = ($d == "")?@date("Y-m-d H:i:s"):$d;
+        return @date($type, self::Timestamp2Time($d));
     }
     
    /**
@@ -87,7 +87,7 @@ class timeResource{
     */
     public static function diffDate($d1, $d2 = "", $type='', $sep='-'){
 
-        $d2 = ($d2 == "")?date("Y-m-d H:i:s"):$d2;
+        $d2 = ($d2 == "")?@date("Y-m-d H:i:s"):$d2;
 
         $type = strtoupper($type);
         switch ($type){
@@ -140,7 +140,7 @@ class timeResource{
         if(count($var) < 2){
             if(strstr($dateTime, ':')){
                 $time = $var[0];
-                $date = date("Y-m-d");
+                $date = @date("Y-m-d");
             }
             else {
                 $date = $var[0];
@@ -234,7 +234,7 @@ class timeResource{
 
         //se está no mesmo ano ou se existe uma diferença de no maximo 2 dias
         $dias = \classes\Classes\timeResource::diffDate($dateTime, "", "D");
-        if(date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == date("Y") || abs($dias) <= 7){
+        if(@date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == @date("Y") || abs($dias) <= 7){
              return self::dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
         }
         
@@ -246,12 +246,12 @@ class timeResource{
         private static function anos($dateTime, $anos, $en, $br, $show_time = true){
             $stime = ($show_time)?"\à\s H:i:s":"";
             $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
-            return str_replace($en, $br, date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
+            return str_replace($en, $br, @date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
         } 
         
         private static function dias($dateTime, $dias, $en, $br, $show_time = true){
             $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
-            $stime = ($show_time)?", às ". date("H:i:s", $dateTime):"";
+            $stime = ($show_time)?", às ". @date("H:i:s", $dateTime):"";
             switch ($dias){
                 case -2: $str = "Depois de amanhã $stime"; break;
                 case -1: $str = "Amanhã $stime";           break;
@@ -259,8 +259,8 @@ class timeResource{
                 case  2: $str = "Anteontem $stime";        break;
                 default: 
                     $stime = ($show_time)?"\à\s H:i:s":"";
-                    if(abs($dias) <= 7) $str = str_replace($en, $br, date("l\, d \DE\ F $stime", $dateTime));
-                    else                $str = str_replace($en, $br, date("d \DE\ F $stime", $dateTime));
+                    if(abs($dias) <= 7) $str = str_replace($en, $br, @date("l\, d \DE\ F $stime", $dateTime));
+                    else                $str = str_replace($en, $br, @date("d \DE\ F $stime", $dateTime));
             }
             return $str;
         }
@@ -286,12 +286,12 @@ class timeResource{
         }
     
     public static function getFormatedDate($date = ""){
-        if($date == "")$date = date("Y-m-d H:i:s");
+        if($date == "")$date = @date("Y-m-d H:i:s");
         return (self::detectDateType($date) == 'br')?$date:self::convert($date);
     }
     
     public static function getDbDate($date = "", $patthern = "Y-m-d H:i:s"){
-        if($date == "") return date($patthern);
+        if($date == "") return @date($patthern);
         return (self::detectDateType($date) == 'db')?$date:self::convert($date);
     }
     
@@ -330,7 +330,7 @@ class timeResource{
      * @return time
      */
     public static function getTimeOfDate($date = ""){
-        return ($date == "")? date("H:i:s"):date("H:i:s", \classes\Classes\timeResource::Timestamp2Time($date));
+        return ($date == "")? @date("H:i:s"):@date("H:i:s", \classes\Classes\timeResource::Timestamp2Time($date));
     }
     
     private static $unidade = array('day', 'week', 'month', 'year', 'hour', 'minute', 'second');
@@ -380,7 +380,7 @@ class timeResource{
      * @return date
      */
     public static function getNextNonWeekendDay($date, $NDias = 1) {
-            $DataAct = date($date);
+            $DataAct = @date($date);
             $d = new DateTime( $DataAct );
             $t = $d->getTimestamp();
 
@@ -391,7 +391,7 @@ class timeResource{
                 $addDay = 86400;
 
                 // get what day it is next day
-                $nextDay = date('w', ($t+$addDay));
+                $nextDay = @date('w', ($t+$addDay));
 
                 // if it's Saturday or Sunday get $i-1
                 if($nextDay == 0 || $nextDay == 6) {

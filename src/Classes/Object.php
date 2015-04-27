@@ -585,13 +585,21 @@ class Object{
             throw new \Exception("A classe $class não existe");
     }
     
-    protected function LogError($msg, $logname = "", $aditionalError = array()){
+    protected function LogError($msg, $logname = "", $aditionalError = array(), $emailTitle = ''){
         if($logname !== "") {
             \classes\Utils\Log::save($logname, $msg);
             if(!empty($aditionalError)){
                 $this->setMessages($aditionalError);
                 \classes\Utils\Log::save($logname, $aditionalError);
             }
+        }
+        if($emailTitle !== ""){
+            if(!empty($aditionalError)){
+                $bool     = false;
+                $conteudo = debugarray($conteudo, "", $bool , false);
+                $msg .= "<hr/> Dados Adicionais: <br/><br/>$conteudo";
+            }
+            sendEmailToWebmasters($emailTitle, $msg);
         }
         return $this->setErrorMessage($msg);
     }
