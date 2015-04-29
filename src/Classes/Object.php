@@ -596,7 +596,7 @@ class Object{
         if($emailTitle !== ""){
             if(!empty($aditionalError)){
                 $bool     = false;
-                $conteudo = debugarray($conteudo, "", $bool , false);
+                $conteudo = debugarray($aditionalError, "", $bool , false);
                 $msg .= "<hr/> Dados Adicionais: <br/><br/>$conteudo";
             }
             sendEmailToWebmasters($emailTitle, $msg);
