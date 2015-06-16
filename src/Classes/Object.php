@@ -564,19 +564,22 @@ class Object{
         static $loaded = array();
         if(in_array($resource, $loaded)) return;
         $loaded[] = $resource;
+        $e        = explode(DS, $resource);
+        $res      = array_shift($e);
+        $this->LoadAllFilesFromDir(SUBDOMAIN_RESOURCES . "/$res");
         $this->LoadAllFilesFromDir(SUBDOMAIN_RESOURCES . "/$resource");
         $this->LoadAllFilesFromDir("$resourceLocation/src/defines");
         $this->LoadAllFilesFromDir("$resourceLocation/src/interfaces");
     }
     
     private function LoadAllFilesFromDir($diretorio){
+        getTrueDir($diretorio);
         $this->LoadResource('files/dir', "object_temp_dir_obj");
-        $files = $this->object_temp_dir_obj->getArquivos($diretorio);
-        if(!empty ($files)){
-            foreach($files as $fname){
-                $dir = $diretorio . "/$fname";
-                if(file_exists($dir)) require_once $dir;
-            }
+        $files = $this->object_temp_dir_obj->getArquivos($diretorio);        
+        if(empty ($files)){return;}
+        foreach($files as $fname){
+            $dir = $diretorio . "/$fname";
+            if(file_exists($dir)) {require_once $dir;}
         }
     }
     
@@ -596,7 +599,7 @@ class Object{
         if($emailTitle !== ""){
             if(!empty($aditionalError)){
                 $bool     = false;
-                $conteudo = debugarray($aditionalError, "", $bool , false);
+                $conteudo = debugarray($conteudo, "", $bool , false);
                 $msg .= "<hr/> Dados Adicionais: <br/><br/>$conteudo";
             }
             sendEmailToWebmasters($emailTitle, $msg);

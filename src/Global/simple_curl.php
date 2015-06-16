@@ -9,7 +9,7 @@ function simple_curl_error($e = ''){
     return $error;
 }
 
-function simple_curl($url,$post=array(),$get=array(),$http=array(), $buildQuery = true, $timeout = 0){
+function simple_curl($url,$post=array(),$get=array(),$http=array(), $buildQuery = true, $timeout = 0, $file = ""){
         if(strstr($url, URL) !== false) {
             if(!defined('Crypty_base64key')) require_once '../../init.php';
             $post['Crypty_base64key'] = Crypty_base64key;
@@ -17,6 +17,15 @@ function simple_curl($url,$post=array(),$get=array(),$http=array(), $buildQuery 
 	$url = explode('?',$url,2);
 	if(count($url)===2){
             $temp_get = array();
+            $url[1] = str_replace(
+                array("quot;", "amp;", "lt;", "gt;", "OElig;", "oelig;", "Scaron;",
+                    "scaron;", "Yuml;", "circ;", "tilde;", "ensp;", "emsp;", "thinsp;",
+                    "zwnj;", "zwj;", "lrm;", "rlm;", "ndash;", "mdash;", "lsquo;", "rsquo;",
+                    "sbquo;", "ldquo;", "rdquo;", "bdquo;", "dagger;", "Dagger;", "permil;",
+                    "lsaquo;", "rsaquo;", "euro;"
+                ), 
+                '', $url[1]
+            );
             parse_str($url[1],$temp_get);
             $get = array_merge($get,$temp_get);
 	}
@@ -29,8 +38,19 @@ function simple_curl($url,$post=array(),$get=array(),$http=array(), $buildQuery 
         }
         if(!empty($http)) {curl_setopt($ch, CURLOPT_HTTPHEADER, $http);}
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        if($file !== ""){
+            $fp = fopen ($file, 'w+');//This is the file where we save the zip file
+            if($fp === false){
+                simple_curl_error("Não foi possível criar o arquivo $file!");
+                return false;
+            }
+            curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+            if(!curl_setopt($ch, CURLOPT_FILE          , $fp)){} // write curl response to file
+        }
+        
 	$var = curl_exec($ch);
         if($var === false){
             simple_curl_error(curl_error($ch));
@@ -38,6 +58,7 @@ function simple_curl($url,$post=array(),$get=array(),$http=array(), $buildQuery 
         curl_close($ch);
         return $var;
 }
+
 
 /*
 class curlHat{

@@ -62,8 +62,12 @@ class Registered{
     }
     
     private static function getLocation($folder, $array, $full_path = false){
-        $folder = (array_key_exists($folder, $array))?$array[$folder]:"";
-        if($folder === "" || false === $full_path)return $folder;
+        if(!array_key_exists($folder, $array)){
+            $e = explode("/", $folder);
+            $folder = array_shift($e);
+        }else{$folder = $array[$folder];}
+        
+        if($folder === "" || false === $full_path){return $folder;}
         $folder = BASE_DIR ."$folder";
         return getTrueDir($folder);
     }
