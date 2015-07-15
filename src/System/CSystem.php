@@ -51,7 +51,7 @@ class CSystem extends System {
         $view->registerVars($vars);
         $view->execute('admin/exception/index');
         try{
-            \classes\Utils\Log::save("Sytem/Exception", $_SERVER['REQUEST_URI']." - $code - $msg");
+            \classes\Utils\Log::save("system/Exception", $_SERVER['REQUEST_URI']." - $code - $msg");
             \usuario_loginModel::user_action_log('exception', "erro:$code  msg:$msg");
         }catch (Exception $ee){
             die("Falha catastrófica! O sistema tentou recuperar de um erro $code e não conseguiu!");

@@ -212,7 +212,7 @@ function genericException($erro, $msg){
           </div> ";
     try{
         usuario_loginModel::user_action_log('exception', "erro:$erro  msg:$msg");
-        \classes\Utils\Log::save("Sytem/Catastrophic", "$erro - $msg");
+        \classes\Utils\Log::save("system/Catastrophic", "$erro - $msg");
     }catch (Exception $ee){}
 }
 
