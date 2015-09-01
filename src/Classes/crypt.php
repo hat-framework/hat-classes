@@ -90,7 +90,8 @@ class crypt extends Object{
     * @param string $strong <p> Determina se o algoritmo strong será usado ou não</p>
     * @return Uma nova chave capaz de criptografar strings em conjunto com a chave ivector
     */
-    public static function gen_base64_key($bytes = 24, &$strong = null) {
+    public static function gen_base64_key($bytes = 24, $strong = true) {
+        $s = (is_bool($strong)?$strong:true);
         return base64_encode(openssl_random_pseudo_bytes($bytes, $strong));
     }
     
@@ -105,5 +106,3 @@ class crypt extends Object{
     }
     
 }
-
-?>
