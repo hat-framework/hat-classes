@@ -528,7 +528,7 @@ class Model extends Object
     }
     
             private function genWhereDualArray($camp, $pkey, $id){
-                if(!is_array($camp) || is_array($id)){return "";}
+                if(!is_array($camp) || !is_array($id)){return "";}
                 $prefix = ($camp == $pkey)?"`$this->tabela`.":"";
                 $and    = "";
                 $where  = "";
