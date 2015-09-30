@@ -14,6 +14,21 @@ function strtolowerbr($texto){
     return strtolower($texto); 
 } 
 
+
+function strtoupperbr($texto){ 
+    //Letras minúsculas com acentos 
+    $texto = strtr($texto, " 
+    ąćęłńóśźżabcdefghijklmnoprstuwyzq 
+    xvёйцукенгшщзхъфывапролджэячсмитьбю 
+    âàáäãêèéëîíìïôõòóöûùúüç 
+    ", " 
+    ĄĆĘŁŃÓŚŹŻABCDEFGHIJKLMNOPRSTUWYZQ 
+    XVЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ 
+    ÂÀÁÄÃÊÈÉËÎÍÌÏÔÕÒÓÖÛÙÚÜÇ 
+    "); 
+    return strtolower($texto); 
+} 
+
 function strCharset($texto){ 
     //Letras minúsculas com acentos 
     $texto = strtr($texto, " 
