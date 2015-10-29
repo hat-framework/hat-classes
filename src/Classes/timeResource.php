@@ -220,22 +220,26 @@ class timeResource{
      * @param bool $show_time Exibir hora
      * @return string
      */
-    public static function Date2StrBr($dateTime, $show_time = true){
+    public static function Date2StrBr($dateTime, $show_time = true, $full_date = false){
         
-        if($dateTime == "") {return "";}
+        if($dateTime == "") {
+            $dateTime = timeResource::getDbDate();
+        }
 
-        //diferenca dentro de uma hora
-        $minutos = \classes\Classes\timeResource::diffDate($dateTime, "", "Mi");
-        if(abs($minutos) < 60) {return self::minutos($dateTime, $minutos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
-            
-        //diferenca dentro de um dia
-        $horas = \classes\Classes\timeResource::diffDate($dateTime, "", "H");
-        if(abs($horas) < 24) {return self::horas($dateTime, $horas, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
+        if(false === $full_date){
+            //diferenca dentro de uma hora
+            $minutos = \classes\Classes\timeResource::diffDate($dateTime, "", "Mi");
+            if(abs($minutos) < 60) {return self::minutos($dateTime, $minutos, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
 
-        //se está no mesmo ano ou se existe uma diferença de no maximo 2 dias
-        $dias = \classes\Classes\timeResource::diffDate($dateTime, "", "D");
-        if(@date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == @date("Y") || abs($dias) <= 7){
-             return self::dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
+            //diferenca dentro de um dia
+            $horas = \classes\Classes\timeResource::diffDate($dateTime, "", "H");
+            if(abs($horas) < 24) {return self::horas($dateTime, $horas, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br);}
+
+            //se está no mesmo ano ou se existe uma diferença de no maximo 2 dias
+            $dias = \classes\Classes\timeResource::diffDate($dateTime, "", "D");
+            if(@date("Y", \classes\Classes\timeResource::Timestamp2Time($dateTime)) == @date("Y") || abs($dias) <= 7){
+                 return self::dias($dateTime, $dias, \classes\Classes\timeResource::$en, \classes\Classes\timeResource::$br, $show_time);
+            }
         }
         
         //diferenca dentro de mais de um ano
@@ -244,9 +248,9 @@ class timeResource{
     }
     
         private static function anos($dateTime, $anos, $en, $br, $show_time = true){
-            $stime = ($show_time)?"\à\s H:i:s":"";
+            $stime = ($show_time)?" \à\s H:i:s":"";
             $dateTime = \classes\Classes\timeResource::Timestamp2Time($dateTime);
-            return str_replace($en, $br, @date("l\, d \DE\ F \DE\ Y $stime", $dateTime));
+            return str_replace($en, $br, @date("l\, d \DE\ F \DE\ Y{$stime}", $dateTime));
         } 
         
         private static function dias($dateTime, $dias, $en, $br, $show_time = true){

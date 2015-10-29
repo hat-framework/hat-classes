@@ -26,7 +26,7 @@ function strtoupperbr($texto){
     XVЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ 
     ÂÀÁÄÃÊÈÉËÎÍÌÏÔÕÒÓÖÛÙÚÜÇ 
     "); 
-    return strtolower($texto); 
+    return strtoupper($texto); 
 } 
 
 function nl2p($string){
