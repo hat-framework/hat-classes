@@ -145,6 +145,7 @@ class Object{
       * @return string
       */
      public function getSuccessMessage($unset = false){
+         $var = "";
      	 if(is_array($this->object_msg)){
              if(array_key_exists("success", $this->object_msg)){
                 $var = $this->object_msg['success'];
