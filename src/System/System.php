@@ -27,6 +27,7 @@ abstract class system extends Object {
     public function run(){
         $this->LoadUserMenu();
         $this->start();
+        $this->setTags();
         
         $controlle = $this->getController();
         $ajax      = $this->ajaxCheck();
@@ -185,8 +186,7 @@ abstract class system extends Object {
         if (!defined("CURRENT_MODULE"))     {define("CURRENT_MODULE"    , $this->modulo);}
         if (!defined("CURRENT_CONTROLLER")) {define("CURRENT_CONTROLLER", $this->controller);}
         if (!defined("LINK"))               {define("LINK"              , CURRENT_MODULE . "/".CURRENT_CONTROLLER);}
-        $this->setMenu();
-        $this->setTags();        
+        $this->setMenu();    
     }
     
     private function setTags(){

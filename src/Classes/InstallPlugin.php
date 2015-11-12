@@ -25,6 +25,9 @@ abstract class InstallPlugin extends Object{
     
     abstract public function install();
     abstract public function unstall();
+    public function update(){
+        return $this->importData();
+    }
     
     protected $import = array();
     protected function importData(){

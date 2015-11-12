@@ -35,8 +35,12 @@ class widget extends \classes\Classes\Object{
             $this->panel = "panel $this->panel";
             return;
         }
-        $data        = \classes\Classes\Template::getClass('panel', 'panel panel-default');
-        $this->panel = isset($data['container'])?$data['container']:"";
+        
+        $data = \classes\Classes\Template::getClass('panel', array('container'=>'panel panel panel-default'));
+        if(!isset($data['container'])){
+            $data['container'] = 'panel panel panel-default';
+        }
+        $this->panel = $data['container'];
     }
     
     public function init(){

@@ -14,6 +14,33 @@ function strtolowerbr($texto){
     return strtolower($texto); 
 } 
 
+
+function strtoupperbr($texto){ 
+    //Letras minúsculas com acentos 
+    $texto = strtr($texto, " 
+    ąćęłńóśźżabcdefghijklmnoprstuwyzq 
+    xvёйцукенгшщзхъфывапролджэячсмитьбю 
+    âàáäãêèéëîíìïôõòóöûùúüç 
+    ", " 
+    ĄĆĘŁŃÓŚŹŻABCDEFGHIJKLMNOPRSTUWYZQ 
+    XVЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ 
+    ÂÀÁÄÃÊÈÉËÎÍÌÏÔÕÒÓÖÛÙÚÜÇ 
+    "); 
+    return strtoupper($texto); 
+} 
+
+function nl2p($string){
+    $paragraphs = '';
+
+    foreach (explode("\n", $string) as $line) {
+        if (trim($line)) {
+            $paragraphs .= '<p>' . $line . '</p>';
+        }
+    }
+
+    return $paragraphs;
+}
+
 function strCharset($texto){ 
     //Letras minúsculas com acentos 
     $texto = strtr($texto, " 
