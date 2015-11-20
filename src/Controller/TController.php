@@ -12,6 +12,7 @@ class TController extends CController {
         //inicializa as variáveis
         $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
         if($this->LoadModel('plugins/action', 'act')->needCode($url, true)){
+            if(!isset($this->vars[0]) || !isset($this->vars[1])){Redirect("");}
             $this->cod = array($this->vars[0], $this->vars[1]);
             $this->urlcod = $this->vars[0] ."/". $this->vars[1];
             $this->registerVar('cod',  $this->urlcod);
