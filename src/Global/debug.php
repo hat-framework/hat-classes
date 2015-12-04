@@ -113,6 +113,40 @@ function print_rrh($array){
 }
 
 
+function print_rpretty($array, $last_level_print_r = false){
+    if(!is_array($array)){echoBr($array); return;}
+    echo "<div style='padding:5px; margin:5px; border: 1px solid #b6b6b6;'>";
+    foreach($array as $key => $arr){
+        if(!is_numeric($key) && trim($key) != ""){echo "<b>$key</b>";}
+        if(is_array($arr)){
+            $is_array = false;
+            foreach($arr as $k => $v){
+                if(is_array($v)){
+                    $is_array = true;
+                    break;
+                }
+            }
+            if(!$is_array){
+                if(!$last_level_print_r){
+                    echo "<table>";
+                    foreach($arr as $k => $v){
+                        echo "<tr>
+                            <td><b>$k:</b></td>
+                            <td>$v</td>
+                        </tr>";
+                    }
+                    echo "</table>";
+                }else{print_r($last_level_print_r);}
+            }
+            else{print_rpretty($arr);}
+        }else{
+            echo ": $arr";
+        }
+    }
+    echo "</div>";
+}
+
+
 function print_rhd($array){
     print_rh($array); die();
 }

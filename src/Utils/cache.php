@@ -17,7 +17,7 @@ class cache{
     
     public static function setFileExtension($extension){
         $obj = fileSaver::LoadFileSaver(self::$file_dir);
-        $obj->setExpirationTime($extension);
+        $obj->setFileExtension($extension);
     }
     
     public static function get($cache_name, $ext = "") {
