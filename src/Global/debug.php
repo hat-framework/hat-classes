@@ -128,7 +128,7 @@ function print_rpretty($array, $last_level_print_r = false){
             }
             if(!$is_array){
                 if(!$last_level_print_r){
-                    echo "<table>";
+                    echo "<table style='margin-bottom:5px; border-bottom:1px solid #ccc;'>";
                     foreach($arr as $k => $v){
                         echo "<tr>
                             <td><b>$k:</b></td>
