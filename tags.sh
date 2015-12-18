@@ -1,7 +1,7 @@
 function _rmTag(){
 
 	echo "---change url---"
-	git remote set-url origin https://tigredonorte:12tm3flol@github.com/hat-framework/hat-classes.git
+	git remote set-url origin https://tigredonorte@github.com/hat-framework/hat-classes.git
 	
 	echo "---Removendo Tag---"
 	git tag -d $1	
@@ -15,7 +15,7 @@ function _fnCommit(){
 	git add -A
 	
 	echo "---change url---"
-	git remote set-url origin https://tigredonorte:12tm3flol@github.com/hat-framework/$1.git
+	git remote set-url origin https://tigredonorte@github.com/hat-framework/$1.git
 	
 	echo "---commit---"
 	git commit -m 'Repositório inicial'
