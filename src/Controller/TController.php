@@ -11,12 +11,11 @@ class TController extends CController {
     public function AfterLoad(){
         //inicializa as variáveis
         $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
-        if($this->LoadModel('plugins/action', 'act')->needCode($url, true)){
+        if(!in_array($this->current_action, $this->free_cod) && $this->act->needCode($url)){
             if(!isset($this->vars[0]) || !isset($this->vars[1])){Redirect("");}
             $this->cod = array($this->vars[0], $this->vars[1]);
             $this->urlcod = $this->vars[0] ."/". $this->vars[1];
             $this->registerVar('cod',  $this->urlcod);
-            
             $this->manageSessions();
             $this->prepareItem();
             $this->generateItemTags();
