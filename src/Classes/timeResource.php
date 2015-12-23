@@ -3,6 +3,8 @@
 namespace classes\Classes;
 class timeResource{
     
+    
+    private static $holidays = array();
     /**
     * Retorna o dia da semana de uma data
     * 
@@ -410,5 +412,52 @@ class timeResource{
 
             return $d->format( 'Y-m-d' );
         }
+        
+    public static function isUsefullDay($date){
+        return (!self::isWeekend($date) && !self::isHoliday($date));
+    }
+
+    public static function isWeekend($date) {
+        $dt = self::getDbDate($date, "Y-m-d");
+        $timestamp = strtotime($dt);
+        if($timestamp == 0){return false;}
+        $weekDay = date('w', $timestamp);
+        return ($weekDay == 0 || $weekDay == 6);
+    }
+
+    public static function isHoliday($date){
+        $dt = self::getDbDate($date, "Y-m-d");
+        $e = explode("-", $dt);
+        $holidays = self::getHolidays($e[0]);
+        return in_array($dt, $holidays);
+    }
+    
+            private static function getHolidays($ano){
+                if(isset(self::$holidays[$ano])){return self::$holidays[$ano];}
+                $dia                    = 86400;
+                $datas                  = array();
+                $datas['pascoa']        = easter_date($ano);
+                $datas['sexta_santa']   = $datas['pascoa'] - (2 * $dia);
+                $datas['carnaval']      = $datas['pascoa'] - (47 * $dia);
+                $datas['carnaval2']     = $datas['pascoa'] - (46 * $dia);
+                $datas['corpus_cristi'] = $datas['pascoa'] + (60 * $dia);
+                $feriados = array (
+                    "$ano-01-01",
+                    date('Y-m-d',$datas['carnaval']),
+                    date('Y-m-d',$datas['carnaval2']),
+                    date('Y-m-d',$datas['sexta_santa']),
+                    date('Y-m-d',$datas['pascoa']),
+                    "$ano-04-21",
+                    "$ano-05-01",
+                    "$ano-09-07",
+                    date('Y-m-d',$datas['corpus_cristi']),
+                    "$ano-10-12",
+                    "$ano-11-02",
+                    "$ano-11-15",
+                    "$ano-12-25",
+                );
+                self::$holidays[$ano] = $feriados;
+                return $feriados;
+            }
     
 }

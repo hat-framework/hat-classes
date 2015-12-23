@@ -208,31 +208,38 @@ class CController extends \classes\Controller\Controller {
 
     protected $redirect_droplink = LINK;
     public function apagar(){
-        if($this->cod == ""){
-            if($this->prevent_red){
-                $this->registerVar('status', '0');
-                $this->registerVar('erro', 'O código deste item não pode estar vazio');
-                return;
-            }
-            Redirect($this->redirect_droplink);
+        if(isset($this->redirect_link['apagar']) && $this->redirect_link['apagar'] != ""){
+            $this->redirect_droplink = $this->redirect_link['apagar'];
         }
-        
-        if($this->model->apagar($this->cod)){
-            $vars = $this->model->getMessages();
-            if(empty($vars)) $vars['success'] = "Conteudo removido com sucesso!";
-            
-            if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $vars);}
-            $vars['status'] = "1";
-            $this->registerVar('status', '1');
-            if(isset($_SESSION[LINK])) unset($_SESSION[LINK]);
-            Redirect($this->redirect_droplink, 0, "", $vars);
-            //die(json_encode($vars));
-        }
+        $this->checkCode();
+        $this->doDrop();
         $this->setVars($this->model->getMessages());
         $this->registerVar('status', "0");
         $this->genTags("Apagar Dados");
         $this->show();
     }
+    
+            private function checkCode(){
+                if($this->cod != ""){return;}
+                if($this->prevent_red){
+                    $this->registerVar('status', '0');
+                    $this->registerVar('erro', 'O código deste item não pode estar vazio');
+                    return;
+                }
+                Redirect($this->redirect_droplink);
+            }
+    
+            private function doDrop(){
+                if(false === $this->model->apagar($this->cod)){return;}
+                $vars = $this->model->getMessages();
+                if(empty($vars)){$vars['success'] = "Conteudo removido com sucesso!";}
+
+                if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $vars);}
+                $vars['status'] = "1";
+                $this->registerVar('status', '1');
+                if(isset($_SESSION[LINK])) unset($_SESSION[LINK]);
+                Redirect($this->redirect_droplink, 0, "", $vars);
+            }
     
     protected $sublistview = "admin/auto/areacliente/page";
     public function sublist(){
@@ -281,52 +288,62 @@ class CController extends \classes\Controller\Controller {
         $this->prevent_red = true;
     }
     protected function forms($display = true, $link = ""){
-        $link = ($link == "")? "admin/auto/formulario":$link;
-        if($this->getTag('page_title') == ""){
-            $nome = (CURRENT_CONTROLLER == 'index')?CURRENT_MODULE:CURRENT_CONTROLLER;
-            $nome = (($this->cod == "")? "Criar ":"Editar ") . $nome;
-            $this->genTags(ucfirst($nome));
-        }
-        
-        $this->registerVar('titulo', $this->getTag('page_title'));
-        if(!empty($_POST)){
-            //print_r($_POST);
-            $lastid = "";
-            if($this->cod != ""){ $status = $this->model->editar($this->cod, $_POST); }
-            else                { $status = $this->model->inserir($_POST); $lastid = $this->model->getLastId();}
-            
-            $id             = ($this->cod != "")?$this->cod:$lastid;
-            if($id === false || $id === 0) $id = "";
-            $messages       = $this->model->getMessages();
-            $vars           = $messages;
-            $vars['status'] = ($status == true)? 1:0;
-            $vars['id']     = $id;
-            if(isset($_GET['item']) && $_GET['item'] == 'plain'){ 
-                $vars['item']          = $this->model->getPlainItem($id); 
-                $vars['item_protocol'] = 'plain';
+        if($link == ""){$link = "admin/auto/formulario";}
+        $this->setPageTitle();
+        $this->processPost($_POST);
+        $this->verifyAjax();
+        if($display) {$this->display($link);}
+    }
+            private function setPageTitle(){
+                if($this->getTag('page_title') == ""){
+                    $nome = (CURRENT_CONTROLLER == 'index')?CURRENT_MODULE:CURRENT_CONTROLLER;
+                    $nome = (($this->cod == "")? "Criar ":"Editar ") . $nome;
+                    $this->genTags(ucfirst($nome));
+                }
+                $this->registerVar('titulo', $this->getTag('page_title'));
             }
-            else  {
-                $vars['item']          = $this->model->getItem($id);
-                $vars['item_protocol'] = 'auto';
-            }
-            $this->setVars($vars);
-            
-            if($status == true && !$this->prevent_red){
+    
+            private function processPost($post){
+                if(empty($post)){return;}
+                //print_r($post);
+                $lastid = "";
+                if($this->cod != ""){ $status = $this->model->editar($this->cod, $post); }
+                else{$status = $this->model->inserir($post); $lastid = $this->model->getLastId();}
+
+                $id       = ($this->cod != "")?$this->cod:$lastid;
+                $messages = $this->model->getMessages();
+                $vars     = $messages;
+                if($id === false || $id === 0) {$id = "";}
+                $this->findItem($vars, $status, $id);
+                $this->setVars($vars);
+                if($status != true || $this->prevent_red){return;}
                 if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $messages);}
-                $id = is_array($id)?implode("/", $id):$id;
+                if(is_array($id)){$id = implode("/", $id);}
                 $page = (array_key_exists($this->current_action, $this->redirect_link))?$this->redirect_link[$this->current_action]:LINK."/show/$id";
                 Redirect($page, 0, "", $vars);
             }
-        }
-        
-        if(!array_key_exists('ajax', $_REQUEST) || !$_REQUEST['ajax']){
-            $dados = (!isset($this->dados))?$this->model->getDados():$this->dados;
-            $this->registerVar('dados', $dados);
-            $formulario = ($this->cod == "")?"":$this->model->getItem($this->cod);
-            $this->registerVar('values', $formulario);
-        }
-        if($display) $this->display($link);
-    }
+            
+                    private function findItem(&$vars, $status, $id){
+                        $vars['status'] = ($status == true)? 1:0;
+                        $vars['id']     = $id;
+                        if(isset($_GET['item']) && $_GET['item'] == 'plain'){ 
+                            $vars['item']          = $this->model->getPlainItem($id); 
+                            $vars['item_protocol'] = 'plain';
+                        }
+                        else  {
+                            $vars['item']          = $this->model->getItem($id);
+                            $vars['item_protocol'] = 'auto';
+                        }
+                    }
+            
+            private function verifyAjax(){
+                if(!array_key_exists('ajax', $_REQUEST) || !$_REQUEST['ajax']){
+                    $dados = (!isset($this->dados))?$this->model->getDados():$this->dados;
+                    $this->registerVar('dados', $dados);
+                    $formulario = ($this->cod == "")?"":$this->model->getItem($this->cod);
+                    if($formulario !== ""){$this->registerVar('values', $formulario);}
+                }
+            }
     
     protected function redirect($page){
         $dados = $this->model->getMessages();
