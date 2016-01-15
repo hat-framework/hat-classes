@@ -301,6 +301,11 @@ class timeResource{
         return (self::detectDateType($date) == 'db')?$date:self::convert($date);
     }
     
+    public static function getLastMonthDate($date = ""){
+        if($date == ""){$date = self::getDbDate("", "Y-m-d");}
+        return date("Y-m-t", strtotime($date));
+    }
+    
     /**
     * Converte uma data ou uma datetime do padrão brasileiro para o americano
     * e vice e versa
