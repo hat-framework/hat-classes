@@ -203,6 +203,21 @@ function sendWebMasterEmailAlert($alertName, $dados = ""){
     return sendEmailToWebmasters("[Alert] $title", $message);
 }
 
+function sendMailToUser($assunto, $corpo, $email_or_coduser, $nome_remetente = ""){
+    $obj = new \classes\Classes\Object();
+    if($obj === null || !is_object($obj)){return false;}
+    $destinatarios = $email_or_coduser;
+    if(is_numeric($email_or_coduser)){
+        $destinatarios = $obj->LoadModel('usuario/login', 'uobj')->getUserMail($email_or_coduser);
+    }
+    if(!is_array($destinatarios) && $destinatarios === ""){return true;}
+    $obj->LoadResource('email', 'mail');
+    if(false === $obj->mail->sendMail($assunto, $corpo, $destinatarios, "", $nome_remetente)){
+        return false;
+    }
+    return true;
+}
+
 function genericException($erro, $msg){
     echo "<div style='border 1px solid gray; color red;'>
             <span>Código de Erro: </span>
