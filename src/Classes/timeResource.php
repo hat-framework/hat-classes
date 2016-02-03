@@ -306,6 +306,27 @@ class timeResource{
         return date("Y-m-t", strtotime($date));
     }
     
+    public static function getFirstMonthDate($date = ""){
+        if($date == ""){$date = self::getDbDate("", "Y-m-01");}
+        return date("Y-m-01", strtotime($date));
+    }
+    
+    public static function getLastDateOfNextMonth($date = "", $usefullDate = false){
+        if($date == ""){$date = self::getDbDate("", "Y-m-d");}
+        $e = explode('-', $date);
+        if($e[1] == 12){$e[0]++; $e[1] = '01';}
+        else{$e[1]++;}
+        $result = self::getLastMonthDate("{$e[0]}-{$e[1]}-15");
+        return (!$usefullDate)?$result:self::getLastUsefullDateOfMonth($result);
+    }
+    
+    public static function getLastUsefullDateOfMonth($date){
+        while(self::isWeekend($date)){
+            $date = self::subDateTime($date);
+        }
+        return $date;
+    }
+    
     /**
     * Converte uma data ou uma datetime do padrão brasileiro para o americano
     * e vice e versa
