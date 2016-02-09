@@ -45,6 +45,16 @@ class cookie{
     }
     
     public static function setVar($cookiename, $value){
+        if (headers_sent()) {
+//            $value = is_array($value)?  debugarray($value, '', false, false):$value;
+//            $link = CURRENT_URL;
+//            $log = nl2br(var_export(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true));
+//            sendEmailToWebmasters(
+//                "[debug][provisório] Headers Enviados", 
+//                "Tentativa de criar um cookie que gera um warning no log. <br/> Cookiename: $cookiename <br/> Valor: $value<br/>url:$link<hr>$log"
+//            );
+            return false;
+        }
         if(!self::exists($cookiename)){self::create($cookiename);}
         $ckname = self::getCookieName($cookiename);
         $value  = \classes\Classes\crypt::encrypt_camp(json_encode($value));
