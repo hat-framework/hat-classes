@@ -44,7 +44,7 @@ class cookie{
         return(isset($_COOKIE[$cookiename]));
     }
     
-    public static function setVar($cookiename, $value){
+    public static function setVar($cookiename, $value, $time = 0){
         if (headers_sent()) {
 //            $value = is_array($value)?  debugarray($value, '', false, false):$value;
 //            $link = CURRENT_URL;
@@ -58,7 +58,7 @@ class cookie{
         if(!self::exists($cookiename)){self::create($cookiename);}
         $ckname = self::getCookieName($cookiename);
         $value  = \classes\Classes\crypt::encrypt_camp(json_encode($value));
-        self::setCookie($ckname, $value);
+        self::setCookie($ckname, $value, $time);
     }
     
     public static function getVar($cookiename){
