@@ -30,7 +30,7 @@ abstract class InstallPlugin extends Object{
     }
     
     protected $import = array();
-    protected function importData(){
+    public function importData(){
         if(empty($this->import)){return true;}
         foreach($this->import as $model => $dados){
             if(!isset($dados) || !is_array($dados) || empty($dados)){continue;}
