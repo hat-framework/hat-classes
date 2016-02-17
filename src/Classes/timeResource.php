@@ -413,7 +413,7 @@ class timeResource{
      */
     public static function getNextNonWeekendDay($date, $NDias = 1) {
             $DataAct = @date($date);
-            $d = new DateTime( $DataAct );
+            $d = new \DateTime( $DataAct );
             $t = $d->getTimestamp();
 
             // loop for X days

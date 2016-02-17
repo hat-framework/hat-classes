@@ -75,11 +75,11 @@ class GUI extends \classes\Classes\Object{
     }
     
     public function image($image, $class, $extra = ''){
-        if($image == "") return;
-        if(strstr($image, 'http:')){
+        if($image == "") {return;}
+        if(strstr($image, 'http')){
             echo "<img src='$image' class='$class' $extra/>";
         }else{
-            $this->Html->LoadImage($image, $class);
+            $this->LoadResource('html', 'Html')->LoadImage($image, $class);
         }
         return $this;
     }
