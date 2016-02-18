@@ -106,7 +106,7 @@ class Component extends Object{
     }
     
     protected function getEnumClass($addclass, $item){
-        $class = "";
+        $class = isset($item['__class'])?$item['__class']:"";
         if(!empty($addclass)){
             foreach($addclass as $var){
                 if(array_key_exists($var, $item)){
