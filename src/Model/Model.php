@@ -521,7 +521,7 @@ class Model extends Object
             if(is_array($id)) {
                 return $this->genWhereIdCase($id, $camp);
             }
-            return "`$camp` = '$id'";
+            return "`$this->tabela`.`$camp` = '$id'";
         }
         
         return $this->genWhereDualArray($camp, $pkey, $id);
