@@ -301,9 +301,10 @@ class timeResource{
         return (self::detectDateType($date) == 'db')?$date:self::convert($date);
     }
     
-    public static function getLastMonthDate($date = ""){
+    public static function getLastMonthDate($date = "", $usefullDate = false){
         if($date == ""){$date = self::getDbDate("", "Y-m-d");}
-        return date("Y-m-t", strtotime($date));
+        $dt = date("Y-m-t", strtotime($date));
+        return (!$usefullDate)?$dt:self::getLastUsefullDateOfMonth($dt);
     }
     
     public static function getFirstMonthDate($date = ""){
