@@ -513,19 +513,24 @@ class Model extends Object
      * caso de listar as chaves estrangeiras N1
      */    
     public function genWhere($campo, $pkey, $id){
-        $camp  = ($campo == "")? $pkey : $campo ;
-        if(!is_array($camp) || !is_array($id)){
-            if(is_array($camp)) {
-                return $this->genWhereCampCase($camp, $id);
-            }
-            if(is_array($id)) {
-                return $this->genWhereIdCase($id, $camp);
-            }
-            return "`$this->tabela`.`$camp` = '$id'";
-        }
-        
-        return $this->genWhereDualArray($camp, $pkey, $id);
+        $where = $this->doGenWhere($campo, $pkey, $id);
+        return str_replace("`$this->tabela`.`$this->tabela`.", "`$this->tabela`.", $where);
     }
+    
+            private  function doGenWhere($campo, $pkey, $id){
+                $camp  = ($campo == "")? $pkey : $campo ;
+                if(!is_array($camp) || !is_array($id)){
+                    if(is_array($camp)) {
+                        return $this->genWhereCampCase($camp, $id);
+                    }
+                    if(is_array($id)) {
+                        return $this->genWhereIdCase($id, $camp);
+                    }
+                    return "`$this->tabela`.`$camp` = '$id'";
+                }
+
+                return $this->genWhereDualArray($camp, $pkey, $id);
+            }
     
             private function genWhereDualArray($camp, $pkey, $id){
                 if(!is_array($camp) || !is_array($id)){return "";}
