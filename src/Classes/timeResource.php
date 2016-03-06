@@ -88,27 +88,19 @@ class timeResource{
     * <p>Se as datas forem iguais, retorna zero</p> 
     */
     public static function diffDate($d1, $d2 = "", $type='', $sep='-'){
-
         $d2 = ($d2 == "")?@date("Y-m-d H:i:s"):$d2;
-
-        $type = strtoupper($type);
+        $datetime1 = new \DateTime($d1);
+        $datetime2 = new \DateTime($d2);
+        $interval = $datetime1->diff($datetime2);
         switch ($type){
-            case 'Y' :
-            case 'A' : $X = 31536000; break;
-            case 'M' : $X = 2592000;  break;
-            case 'D' : $X = 86400;    break;
-            case 'H' : $X = 3600;     break;
-            case 'MI': $X = 60;       break;
-            default:   $X = 1;
+            case'A': return $interval->y;
+            case'M': return $interval->y*12+$interval->m;
+            case'D': return $interval->days;
+            
+            case'H' : return $interval->days * 24;
+            case'Mi': return $interval->days * 24*60;
         }
-        //separa data do tempo
-        $time1 = \classes\Classes\timeResource::Timestamp2Time($d2);
-        $time2 = \classes\Classes\timeResource::Timestamp2Time($d1);
-        $res   = ($time1 - $time2)/$X;
-        //echo "$time1 - $time2 - $X";
-        //if($res > -1/10 && $res < 1/10)$res = 0;
-        return floor($res);
-
+        return $interval->days * 24*3600;
     }
     
     public static function getFormatedTimestampDiff($date, $frase_ini = "", $frase_encerra = ""){
