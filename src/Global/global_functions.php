@@ -203,7 +203,7 @@ function sendWebMasterEmailAlert($alertName, $dados = ""){
     return sendEmailToWebmasters("[Alert] $title", $message);
 }
 
-function sendMailToUser($assunto, $corpo, $email_or_coduser, $nome_remetente = ""){
+function sendMailToUser($assunto, $corpo, $email_or_coduser, $nome_remetente = "", $email_api = "email"){
     $obj = new \classes\Classes\Object();
     if($obj === null || !is_object($obj)){return false;}
     $destinatarios = $email_or_coduser;
@@ -211,11 +211,16 @@ function sendMailToUser($assunto, $corpo, $email_or_coduser, $nome_remetente = "
         $destinatarios = $obj->LoadModel('usuario/login', 'uobj')->getUserMail($email_or_coduser);
     }
     if(!is_array($destinatarios) && $destinatarios === ""){return true;}
-    $obj->LoadResource('email', 'mail');
-    if(false === $obj->mail->sendMail($assunto, $corpo, $destinatarios, "", $nome_remetente)){
+    try{
+        $obj->LoadResource($email_api, 'mail');
+        if(false === $obj->mail->sendMail($assunto, $corpo, $destinatarios, "", $nome_remetente)){
+            return false;
+        }
+        return true;
+    } catch (Exception $ex) {
         return false;
     }
-    return true;
+    
 }
 
 function genericException($erro, $msg){
