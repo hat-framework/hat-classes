@@ -65,6 +65,7 @@ class Registered{
         if(!array_key_exists($folder, $array)){
             $e = explode("/", $folder);
             $folder = array_shift($e);
+            return false;
         }else{$folder = $array[$folder];}
         
         if($folder === "" || false === $full_path){return $folder;}

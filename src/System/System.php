@@ -20,11 +20,78 @@ abstract class system extends Object {
         }  catch (\Exception $e){
             die($e->getMessage());
         }
-        
         $this->init();
     }
     
+             
+             public function init(){
+                $this->checkMobile();
+                $this->setBaseData();
+                $this->defineBaseData();
+                $this->setMenu();
+            }
+            
+                    private function checkMobile(){
+                        if(!defined("MOBILE")) {
+                           $this->LoadResource('mobile', 'mob');
+                           $bool = $this->mob->IsMobile();
+                           define("MOBILE", ($bool == true)?true:false);
+                       }
+                    }
+                    
+                    private function setBaseData(){
+                        //seta a url
+                        $this->url = (isset( $_GET['url'] )? $_GET['url'] : "$this->mdefault/$this->cdefault/index");
+                        $explode = explode("/", $this->url);
+                        //print_r($explode); if($explode[0] == 'p'){die('ronca');} else {die('foo');}
+                        if (!defined("CURRENT_URL")) {define("CURRENT_URL", $this->url);}
+
+                        //seta o array com explode
+                        $this->modulo         =  array_shift($explode);
+                        $this->controller     =  array_shift($explode);
+                        $this->action         =  array_shift($explode);
+                        $this->vars           =  $explode;
+                        if($this->controller == ""){
+                            $this->controller = "index";
+                            $this->action     = "index";
+                        }
+                    }
+                    
+                    private function defineBaseData(){
+                        if(!$this->PathExists($this->modulo, $this->controller, $this->action)){
+                            if(!\classes\Classes\Registered::getPluginLocation($this->modulo, true)){
+                                $this->action     = $this->controller;
+                                $this->controller = $this->modulo;
+                                $this->modulo     = MODULE_DEFAULT;
+                            }
+                            
+                            if(!$this->PathExists($this->modulo, $this->controller, $this->action)){
+                                array_push($this->vars, $this->action);
+                                $this->action = $this->controller;
+                                $this->controller = "index";
+                            }
+                        }
+                        if (!defined("CURRENT_MODULE"))     {define("CURRENT_MODULE"    , $this->modulo);}
+                        if (!defined("CURRENT_CONTROLLER")) {define("CURRENT_CONTROLLER", $this->controller);}
+                        if (!defined("LINK"))               {define("LINK"              , CURRENT_MODULE . "/".CURRENT_CONTROLLER);}
+                    }
+                    
+                    public function setMenu(){
+                        $v = session::getVar('system_menu_superior');
+                        if($v == ""){
+                            $this->LoadModel('site/menu', 'smenu');
+                            $menu = $this->smenu->getMenu();
+
+                            $this->LoadJsPlugin('menu/dropdown', 'menu');
+                            $this->menu->imprime();
+                            $v = $this->menu->draw($menu, "menu");
+                            session::setVar('system_menu_superior', $v);
+                        }
+                        \classes\Classes\EventTube::addEvent('menu-superior', $v);
+                    }
+    
     public function run(){
+        
         $this->LoadUserMenu();
         $this->start();
         $this->setTags();
@@ -41,14 +108,27 @@ abstract class system extends Object {
         $this->callAction($action);
     }
     
-            private function ajaxCheck(){
-                if(!isset($this->vars[0]) || $this->vars[0] !== 'ajax'){
-                    define('AJAX_ENABLED', false);
-                    return false;
+            private function LoadUserMenu(){
+                if($this->lobj->IsLoged()){
+                    $this->lobj->userIsConfirmed();
                 }
-                array_shift($this->vars);
-                define('AJAX_ENABLED', true);
-                return true;
+                $this->LoadComponent('usuario/login', 'ucomp')->setLoadMenu();
+            }
+            
+            private function setTags(){
+                if(!isset($this->utag) || $this->utag === null){return;}
+                try{
+                    $cod_usuario = \usuario_loginModel::CodUsuario();
+                    if($cod_usuario == 0){return;}
+                    $this->utag->addTag(array(
+                        'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo"
+                        ),$cod_usuario
+                    );
+                    $this->utag->addTag(array(
+                        'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo ". ucfirst(CURRENT_MODULE)
+                        ), $cod_usuario
+                    );
+                } catch (Exception $ex) {}
             }
             
             private function getController(){
@@ -64,6 +144,16 @@ abstract class system extends Object {
                 }
                 return $controlle;
             }
+    
+            private function ajaxCheck(){
+                if(!isset($this->vars[0]) || $this->vars[0] !== 'ajax'){
+                    define('AJAX_ENABLED', false);
+                    return false;
+                }
+                array_shift($this->vars);
+                define('AJAX_ENABLED', true);
+                return true;
+            }
             
             private function appCheck(){
                 if($this->action !== "app" || !isset($this->vars[1])){
@@ -78,6 +168,23 @@ abstract class system extends Object {
                 $this->class = new $controller($this->vars);
                 $this->class->setCurrentApp($app);
                 if($ajax){$this->class->enableAjax();}
+            }
+            
+            private function callExtension($action){
+                $class = "{$action}Action";
+                $dir   = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
+                getTrueDir($dir);
+                if(!file_exists($dir)){return false;}
+                require_once $dir;
+                if(!class_exists($class, false)){return false;}
+
+                $obj = new $class();
+                if(!method_exists($obj, 'execute')){return false;}
+                $this->defineConstants($action);
+                $this->security($this->class, $action);
+                $obj->setController($this->class);
+                $obj->execute($this->newvars);
+                return true;
             }
             
             private function checkAction(){
@@ -105,7 +212,7 @@ abstract class system extends Object {
             }
             
             private function callAction($action){
-                if($this->callExtension($action) === true){return;}
+                //if($this->callExtension($action) === true){return;}
                 if(is_object($this->plloader)){$this->plloader->AfterRegister($this->newvars);}
                 $this->class->setVars($this->newvars);
                 $this->history();
@@ -118,22 +225,47 @@ abstract class system extends Object {
                 $this->class->BeforeExecute();
             }
             
-            private function callExtension($action){
-                $class = "{$action}Action";
-                $dir   = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
-                getTrueDir($dir);
-                if(!file_exists($dir)){return false;}
-                require_once $dir;
-                if(!class_exists($class, false)){return false;}
-                
-                $obj = new $class();
-                if(!method_exists($obj, 'execute')){return false;}
-                $this->defineConstants($action);
-                $this->security($this->class, $action);
-                $obj->setController($this->class);
-                $obj->execute($this->newvars);
-                return true;
-            }
+                    private function history(){
+                        if(!isset($_SESSION['history'])){
+                            $_SESSION['history'] = array('last' => MODULE_DEFAULT . "/index", 'atual' => LINK);
+                        }
+                        elseif($_SESSION['history']['atual'] != LINK && !isset ($_REQUEST['ajax'])){
+                            $_SESSION['history']['last']  = $_SESSION['history']['atual'];
+                            $_SESSION['history']['atual'] = LINK;
+                        }
+                    }
+                    
+                    public function security($class, $action){
+                        $has = false;
+                        if($this->lobj->setLastAccessOfUser()){$has = $this->lobj->has_permission_alterada();}
+                        
+                        if($this->controller == "") {$this->controller = 'index';}
+                        $action_name = "$this->modulo/$this->controller/$action";
+                        \usuario_loginModel::user_action_log();
+                        $this->denyExternNonPublicRequisition($action_name);
+                        $act_temp    = $action_name;
+                        $this->LoadModel('usuario/perfil', 'perm');
+                        $perm = $this->perm->hasPermission($act_temp, true, $has);
+                        if(!defined('PERMISSION')) {define("PERMISSION", $perm);}
+                        if($perm == 'n'){
+                            if($this->lobj->IsLoged()) {throw new \classes\Exceptions\AcessDeniedException();}
+                            else {$this->lobj->needLogin();}
+                            return;
+                        }
+                        $this->LoadModel('plugins/action', 'act');
+                        $this->act->geraMenu($this->modulo, $action_name); 
+                        if($perm != "p") {return;}
+                        if(!$class->hasPermission($action)) {throw new \classes\Exceptions\AcessDeniedException();}
+                    }
+
+                            private function denyExternNonPublicRequisition($action_name){
+                                $this->LoadClassFromPlugin('usuario/perfil/perfilPermissions', 'pp');
+                                if($this->pp->isPublic($action_name)){return true;}
+                                $var = validaUrl();
+                                if($var === true) {return true;}
+                                die($var);
+                            }
+
             
             private function defineConstants($action){
                 //define a constante da página atual
@@ -149,62 +281,6 @@ abstract class system extends Object {
         $this->newvars = array_merge($this->newvars, $vars);
     }
     
-    public function init(){
-        
-        if(!defined("MOBILE")) {
-            $this->LoadResource('mobile', 'mob');
-            $bool = $this->mob->IsMobile();
-            define("MOBILE", ($bool == true)?true:false);
-        }
-
-        //seta a url
-        $this->url = (isset( $_GET['url'] )? $_GET['url'] : "$this->mdefault/$this->cdefault/index");
-        $explode = explode("/", $this->url);
-        //print_r($explode); if($explode[0] == 'p'){die('ronca');} else {die('foo');}
-        if (!defined("CURRENT_URL")) define("CURRENT_URL", $this->url);
-
-        //seta o array com explode
-        $this->modulo         =  array_shift($explode);
-        $this->controller     =  array_shift($explode);
-        $this->action         =  array_shift($explode);
-        $this->vars           =  $explode;
-        
-        if($this->controller == ""){
-            $this->controller = "index";
-            $this->action     = "index";
-        }
-        
-        if(!$this->PathExists($this->modulo, $this->controller, $this->action)){
-            array_push($this->vars, $this->action);
-            $this->action = $this->controller;
-            $this->controller = "index";
-        }
-        $page  = $this->modulo;
-        $page .= ($this->controller != "")?"/$this->controller/":"";
-        $page .= ($this->action != "")    ?"$this->action/":"";
-
-        if (!defined("CURRENT_MODULE"))     {define("CURRENT_MODULE"    , $this->modulo);}
-        if (!defined("CURRENT_CONTROLLER")) {define("CURRENT_CONTROLLER", $this->controller);}
-        if (!defined("LINK"))               {define("LINK"              , CURRENT_MODULE . "/".CURRENT_CONTROLLER);}
-        $this->setMenu();    
-    }
-    
-    private function setTags(){
-        if(!isset($this->utag) || $this->utag === null){return;}
-        try{
-            $cod_usuario = \usuario_loginModel::CodUsuario();
-            if($cod_usuario == 0){return;}
-            $this->utag->addTag(array(
-                'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo"
-                ),$cod_usuario
-            );
-            $this->utag->addTag(array(
-                'taggroup' =>'Usuário Ativo','tag_expires_time' => '30', 'tag'=>"Usuário Ativo ". ucfirst(CURRENT_MODULE)
-                ), $cod_usuario
-            );
-        } catch (Exception $ex) {}
-    }
-    
     public function pagenotfound($method, $extras = ""){
         $msg = "";
         if(DEBUG){
@@ -215,69 +291,6 @@ abstract class system extends Object {
         throw new \classes\Exceptions\PageNotFoundException($msg);
     }
     
-    public function security($class, $action){
-        $has = $this->lobj->has_permission_alterada();
-        $this->lobj->setLastAccessOfUser();
-        if($this->controller == "") {$this->controller = 'index';}
-        $action_name = "$this->modulo/$this->controller/$action";
-        \usuario_loginModel::user_action_log();
-        $this->denyExternNonPublicRequisition($action_name);
-        $act_temp    = $action_name;
-        $this->LoadModel('usuario/perfil', 'perm');
-        $perm = $this->perm->hasPermission($act_temp, true, $has);
-        if(!defined('PERMISSION')) {define("PERMISSION", $perm);}
-        if($perm == 'n'){
-            if($this->lobj->IsLoged()) {throw new \classes\Exceptions\AcessDeniedException();}
-            else {$this->lobj->needLogin();}
-            return;
-        }
-        $this->LoadModel('plugins/action', 'act');
-        $this->act->geraMenu($this->modulo, $action_name); 
-        if($perm != "p") {return;}
-        if(!$class->hasPermission($action)) {throw new \classes\Exceptions\AcessDeniedException();}
-    }
-    
-    private function denyExternNonPublicRequisition($action_name){
-        $this->LoadClassFromPlugin('usuario/perfil/perfilPermissions', 'pp');
-        if($this->pp->isPublic($action_name)){return true;}
-        $var = validaUrl();
-        if($var === true) {return true;}
-        die($var);
-    }
-    
-    private function LoadUserMenu(){
-        if($this->lobj->IsLoged()){
-            $this->lobj->userIsConfirmed();
-        }
-        $this->LoadComponent('usuario/login', 'ucomp');
-        $this->ucomp->setLoadMenu();
-    }
-    
-     public function setMenu(){
-        $v = session::getVar('system_menu_superior');
-        if(\usuario_loginModel::IsWebmaster() || $v == ""){
-            $this->LoadModel('site/menu', 'smenu');
-            $menu = $this->smenu->getMenu();
-
-            $this->LoadJsPlugin('menu/dropdown', 'menu');
-            $this->menu->imprime();
-            $v = $this->menu->draw($menu, "menu");
-            session::setVar('system_menu_superior', $v);
-        }
-        
-        \classes\Classes\EventTube::addEvent('menu-superior', $v);
-    }
-
-    private function history(){
-        if(!isset($_SESSION['history'])){
-            $_SESSION['history'] = array('last' => MODULE_DEFAULT . "/index", 'atual' => LINK);
-        }
-        elseif($_SESSION['history']['atual'] != LINK && !isset ($_REQUEST['ajax'])){
-            $_SESSION['history']['last']  = $_SESSION['history']['atual'];
-            $_SESSION['history']['atual'] = LINK;
-        }
-    }
-
     abstract function PathExists($modulo, $controller, $action);
     abstract function start();
 }
