@@ -171,18 +171,19 @@ abstract class system extends Object {
             }
             
             private function callExtension($action){
-                $class = "{$action}Action";
-                $dir   = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
+                $class  = "{$action}Action";
+                $dir    = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
                 getTrueDir($dir);
                 if(!file_exists($dir)){return false;}
                 require_once $dir;
                 if(!class_exists($class, false)){return false;}
 
-                $obj = new $class();
+                $obj = new $class($this->vars);
                 if(!method_exists($obj, 'execute')){return false;}
+                
                 $this->defineConstants($action);
                 $this->security($this->class, $action);
-                $obj->setController($this->class);
+                //$obj->setController($this->class);
                 $obj->execute($this->newvars);
                 return true;
             }
