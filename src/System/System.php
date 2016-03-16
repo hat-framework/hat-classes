@@ -92,7 +92,6 @@ abstract class system extends Object {
     
     public function run(){
         
-        $this->LoadUserMenu();
         $this->start();
         $this->setTags();
         
@@ -105,6 +104,7 @@ abstract class system extends Object {
         
         $action    = $this->checkAction();
         $this->initializeCTRL($action);
+        $this->LoadUserMenu();
         $this->callAction($action);
     }
     

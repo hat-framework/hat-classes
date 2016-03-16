@@ -72,6 +72,12 @@ abstract class Controller extends Object {
         
         public final function display($action, $vars = array()){
         
+            if(empty($this->tags)){
+                $data = $this->LoadModel('plugins/action', 'act')->selectPage(CURRENT_CANONICAL_PAGE);
+                if(!empty($data)){
+                    $this->genTags($data['title'], $data['description'], $data['tags']);
+                }
+            }
             //seta as variaveis
             $this->setVars($vars);
             //carrega a view
