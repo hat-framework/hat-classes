@@ -91,9 +91,9 @@ abstract class system extends Object {
                     }
     
     public function run(){
-        
         $this->start();
         $this->setTags();
+        $this->tokenAuth();
         
         $controlle = $this->getController();
         $ajax      = $this->ajaxCheck();
@@ -113,6 +113,17 @@ abstract class system extends Object {
                     $this->lobj->userIsConfirmed();
                 }
                 $this->LoadComponent('usuario/login', 'ucomp')->setLoadMenu();
+            }
+            
+            private function tokenAuth(){
+                try{
+                    if(!isset($_POST['utoken']) || !isset($_POST['userID'])){return false;}
+                    if(\usuario_loginModel::CodUsuario() != 0){return true;}
+                    if(trim($_POST['utoken']) == "" || trim($_POST['userID']) == ""){return false;}
+                    return $this->lobj->autenticate($_POST['userID'], $_POST['utoken']);
+                } catch (Exception $ex) {
+                    return false;
+                }
             }
             
             private function setTags(){
