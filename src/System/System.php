@@ -14,6 +14,7 @@ abstract class system extends Object {
     protected $template = "";
     protected $plloader = "";
     public function  __construct() {
+        
         try{
             $this->LoadModel('usuario/login', 'lobj');
             $this->LoadModel('usuario/tag/usertag', 'utag');
@@ -120,7 +121,7 @@ abstract class system extends Object {
                     if(!isset($_POST['utoken']) || !isset($_POST['userID'])){return false;}
                     if(\usuario_loginModel::CodUsuario() != 0){return true;}
                     if(trim($_POST['utoken']) == "" || trim($_POST['userID']) == ""){return false;}
-                    return $this->lobj->autenticate($_POST['userID'], $_POST['utoken']);
+                    return \usuario_loginModel::autenticate($_POST['userID'], $_POST['utoken']);
                 } catch (Exception $ex) {
                     return false;
                 }
