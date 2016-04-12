@@ -121,27 +121,23 @@ class Template extends Object{
     }
     
             private function getViewFileName($module, $controller, $view, $tmp){
+                $file = Registered::getTemplateLocation($module, true)."/extensions/".CURRENT_MODULE."/".CURRENT_CONTROLLER."/{$view}View.phtml";
+                getTrueDir($file);
+                if(file_exists($file)){return $file ;}
+                
                 $file = DIR_BASIC . "/extensions/".CURRENT_MODULE."/".CURRENT_CONTROLLER."/$view/{$view}View.phtml";
                 getTrueDir($file);
-                if(file_exists($file)){
-                    return $file ;
-                }
+                if(file_exists($file)){return $file ;}
                 
                 $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.html";
-                if(file_exists($file)){
-                    return $file ;
-                }
+                getTrueDir($file);
+                if(file_exists($file)){return $file ;}
                 
                 $file = Registered::getPluginLocation($module, true) . "/$controller/views/$view"."View.phtml";
-                if(file_exists($file)){
-                    return $file ;
-                }
+                getTrueDir($file);
+                if(file_exists($file)){return $file ;}
                 
-                if(is_string($tmp) && file_exists($tmp)){
-                    return $tmp;
-                }
-                    
-                
+                if(is_string($tmp) && file_exists($tmp)){return $tmp;}
             }
     
     private function loadTags($tag){
