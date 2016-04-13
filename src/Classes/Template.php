@@ -121,7 +121,7 @@ class Template extends Object{
     }
     
             private function getViewFileName($module, $controller, $view, $tmp){
-                $file = Registered::getTemplateLocation($module, true)."/extensions/".CURRENT_MODULE."/".CURRENT_CONTROLLER."/{$view}View.phtml";
+                $file = Registered::getTemplateLocation(CURRENT_TEMPLATE, true)."/extensions/".CURRENT_MODULE."/".CURRENT_CONTROLLER."/{$view}View.phtml";
                 getTrueDir($file);
                 if(file_exists($file)){return $file ;}
                 
