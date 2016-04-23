@@ -14,6 +14,7 @@ abstract class system extends Object {
     protected $template = "";
     protected $plloader = "";
     public function  __construct() {
+        
         try{
             $this->LoadModel('usuario/login', 'lobj');
             $this->LoadModel('usuario/tag/usertag', 'utag');
@@ -91,10 +92,9 @@ abstract class system extends Object {
                     }
     
     public function run(){
-        
-        $this->LoadUserMenu();
         $this->start();
         $this->setTags();
+        $this->tokenAuth();
         
         $controlle = $this->getController();
         $ajax      = $this->ajaxCheck();
@@ -105,6 +105,7 @@ abstract class system extends Object {
         
         $action    = $this->checkAction();
         $this->initializeCTRL($action);
+        $this->LoadUserMenu();
         $this->callAction($action);
     }
     
@@ -113,6 +114,17 @@ abstract class system extends Object {
                     $this->lobj->userIsConfirmed();
                 }
                 $this->LoadComponent('usuario/login', 'ucomp')->setLoadMenu();
+            }
+            
+            private function tokenAuth(){
+                try{
+                    if(!isset($_POST['utoken']) || !isset($_POST['userID'])){return false;}
+                    if(\usuario_loginModel::CodUsuario() != 0){return true;}
+                    if(trim($_POST['utoken']) == "" || trim($_POST['userID']) == ""){return false;}
+                    return \usuario_loginModel::autenticate($_POST['userID'], $_POST['utoken']);
+                } catch (Exception $ex) {
+                    return false;
+                }
             }
             
             private function setTags(){
@@ -171,18 +183,19 @@ abstract class system extends Object {
             }
             
             private function callExtension($action){
-                $class = "{$action}Action";
-                $dir   = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
+                $class  = "{$action}Action";
+                $dir    = DIR_BASIC . "/extensions/$this->modulo/$this->controller/$action/$class.php";
                 getTrueDir($dir);
                 if(!file_exists($dir)){return false;}
                 require_once $dir;
                 if(!class_exists($class, false)){return false;}
 
-                $obj = new $class();
+                $obj = new $class($this->vars);
                 if(!method_exists($obj, 'execute')){return false;}
+                
                 $this->defineConstants($action);
                 $this->security($this->class, $action);
-                $obj->setController($this->class);
+                //$obj->setController($this->class);
                 $obj->execute($this->newvars);
                 return true;
             }
