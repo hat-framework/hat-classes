@@ -159,6 +159,14 @@ function print_in_table($array){
     echo "<hr/>";
 }
 
+function printWebmasters($function, $array){
+    if(!usuario_loginModel::IsWebmaster() || !function_exists($function)) {return;}
+    echo "<div style='border:1px solid #ccc; margin:5px; padding:5px;'>";
+    echo "<h2>Debug visível só para webmasters</h2>";
+    $function($array);
+    echo "</div>";
+}
+
 function debugWebmaster($str, $die = false){
     if(!usuario_loginModel::IsWebmaster()) {return;}
     is_array($str)?  debugarray($str):echoBr($str);
