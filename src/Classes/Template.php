@@ -29,10 +29,10 @@ class Template extends Object{
         $this->tags['charset']     = CHARSET;
         $this->tags['autor']       = AUTOR;
         $this->tags['language']    = isset($_SESSION['language']) ? $_SESSION['language'] : "pt-br";
-        $this->tags['description'] = SITE_DESCRIPTION;
-        $this->tags['keywords']    = SITE_KEYWORDS;
+        //$this->tags['description'] = SITE_DESCRIPTION;
+        //$this->tags['keywords']    = SITE_KEYWORDS;
         $this->tags['robots']      = "FOLLOW";
-        $this->tags['page_title']  = SITE_NOME;
+        //$this->tags['page_title']  = SITE_NOME;
         $this->tags['favicon']     = URL . \classes\Classes\Registered::getTemplateLocation($this->template) . "/img/favicon.ico";
 
         //se vem alguma metatag por parametro
