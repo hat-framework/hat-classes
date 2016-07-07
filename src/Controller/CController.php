@@ -355,7 +355,11 @@ class CController extends \classes\Controller\Controller {
     public function search($display = true, $link = ""){
         $link = ($link == "")? "admin/auto/areacliente/page":$link;
         $str  = array();
-        foreach($_GET as $name => $var){$str[] = "$name='$var'";}
+        $dados = $this->model->getDados();
+        foreach($_GET as $name => $var){
+            if(!array_key_exists($name, $dados)){continue;}
+            $str[] = "$name='$var'";
+        }
         $where = implode(' AND ', $str);
         $this->setPage();
         $method = $this->paginate_method;
