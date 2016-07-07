@@ -31,7 +31,7 @@ class CController extends \classes\Controller\Controller {
     protected $cod             = "";
     protected $current_action  = "";
     protected $item            = array();
-    protected $free_cod        = array('index', 'formulario', 'grid');
+    protected $free_cod        = array('index', 'formulario', 'grid', 'search');
     protected $blocked_actions = array();
     protected $redirect_link   = array();
 
