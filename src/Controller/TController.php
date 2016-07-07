@@ -12,9 +12,13 @@ class TController extends CController {
         //inicializa as variáveis
         $url   = substr(CURRENT_PAGE, 0, strlen(CURRENT_PAGE)-1);
         if(!in_array(CURRENT_ACTION, $this->free_cod) && $this->act->needCode($url)){
-            if(!isset($this->vars[0]) || !isset($this->vars[1])){Redirect("");}
-            $this->cod = array($this->vars[0], $this->vars[1]);
-            $this->urlcod = $this->vars[0] ."/". $this->vars[1];
+            $pkeys     = $this->model->getPkey();
+            $this->cod = array();
+            foreach($pkeys as $i => $pk){
+                if(!isset($this->vars[$i])){Redirect("");}
+                $this->cod[] = $this->vars[$i];
+            }
+            $this->urlcod = implode('/',$this->vars);
             $this->registerVar('cod',  $this->urlcod);
             $this->manageSessions();
             $this->prepareItem();
