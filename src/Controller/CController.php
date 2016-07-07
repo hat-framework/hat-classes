@@ -352,6 +352,20 @@ class CController extends \classes\Controller\Controller {
         Redirect($page, 0, "", $dados);
     }
     
+    public function search($display = true, $link = ""){
+        $link = ($link == "")? "admin/auto/areacliente/page":$link;
+        $str  = array();
+        foreach($_GET as $name => $var){$str[] = "$name='$var'";}
+        $where = implode(' AND ', $str);
+        $this->setPage();
+        $method = $this->paginate_method;
+        $item   = $this->model->$method($this->page, CURRENT_PAGE, '','',20,array(),$where);
+        $this->registerVar("item"        , $item);
+        $this->registerVar("comp_action" , 'listInTable');
+        $this->registerVar("show_links"  , '');
+    	if($display) $this->display($link);
+    }
+    
     public function app(){
         if(!isset($this->vars[0])) Redirect (LINK . "/show");
         $cod_app = array_shift($this->vars);
