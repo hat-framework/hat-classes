@@ -31,7 +31,7 @@ class CController extends \classes\Controller\Controller {
     protected $cod             = "";
     protected $current_action  = "";
     protected $item            = array();
-    protected $free_cod        = array('index', 'formulario', 'grid');
+    protected $free_cod        = array('index', 'formulario', 'grid', 'search');
     protected $blocked_actions = array();
     protected $redirect_link   = array();
 
@@ -350,6 +350,24 @@ class CController extends \classes\Controller\Controller {
         foreach($this->variaveis as $name => $var) $dados[$name] = $var;
         if(!isset($_REQUEST['ajax'])){session::setVar($this->sess_cont_alerts, $dados);}
         Redirect($page, 0, "", $dados);
+    }
+    
+    public function search($display = true, $link = ""){
+        $link = ($link == "")? "admin/auto/areacliente/page":$link;
+        $str  = array();
+        $dados = $this->model->getDados();
+        foreach($_GET as $name => $var){
+            if(!array_key_exists($name, $dados)){continue;}
+            $str[] = "$name='$var'";
+        }
+        $where = implode(' AND ', $str);
+        $this->setPage();
+        $method = $this->paginate_method;
+        $item   = $this->model->$method($this->page, CURRENT_PAGE, '','',20,array(),$where);
+        $this->registerVar("item"        , $item);
+        $this->registerVar("comp_action" , 'listInTable');
+        $this->registerVar("show_links"  , '');
+    	if($display) $this->display($link);
     }
     
     public function app(){
