@@ -86,5 +86,3 @@ abstract class Install extends Object{
         return true;
     }
 }
-
-?>

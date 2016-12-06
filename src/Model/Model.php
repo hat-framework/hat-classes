@@ -200,7 +200,7 @@ class Model extends Object
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
         $this->LoadResource("html", 'html');
-        //$this->pag->startDebug();
+        $this->pag->startDebug();
 
         $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
@@ -864,6 +864,16 @@ class Model extends Object
     public function getDados(){
         return $this->blockBecauseFeature()?array():$this->dados;
     }
+	
+	/**
+	 * Verifica se existe algum item inserido na tabela ou se a 
+	 * tabela do banco de dados está vazia
+	 * @return boolean
+	 */
+	public function hasInsertedItem(){
+		$item = $this->selecionar(array($this->pkey), '', 1);
+		return(!empty($item));
+	}
     
     public function getCount($where = ''){
         $join = $this->db->getJoin();
@@ -929,7 +939,24 @@ class Model extends Object
                 }
                 
             }
-    
+	
+    public function importDataFromCsv($fn){
+		if (empty($_FILES)) {return true;}
+		if (isset($_FILES['file']['error']) && $_FILES['file']['error'] != "0") {
+			return $this->setErrorMessage('Erro ao fazer o upload do arquivo');
+		}
+		
+		$csv = $this->LoadResource('files/csv', 'csv')->getCsvResource($_FILES['file']['tmp_name'], $separator = ",", "", true);
+		$data = $csv->getAllLines();
+		if(is_callable($fn)){
+			foreach ($data as $cod => &$dt) {
+				$dt = $fn($cod, $dt);
+			}
+		}
+		if (false === $this->importDataFromArray($data)) {return false;}
+		return $this->setSuccessMessage("Lista atualizada com sucesso!");
+	}
+	
     public function importDataFromArray($dados, $insertIgnore = false){
         $callback = $this->getImportationCallback();
         $cbkdata  = $this->getImportationCallbackData();

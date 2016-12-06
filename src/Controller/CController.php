@@ -384,6 +384,20 @@ class CController extends \classes\Controller\Controller {
         $this->cont->$method();
     }
     
+	 public function grid2() {
+		$query = "";
+		if(!empty($_GET) && count($_GET) > 1){
+			$temp = $this->LoadResource('formulario/filter', 'sgen')->getQuery($_GET, $this->model_name);
+			$query = implode(" AND ", $temp);
+		}
+        $this->model->importDataFromCsv(null);
+		$this->setVars($this->model->getMessages());
+		$this->setPage();
+		$item = $this->model->paginate($this->page, CURRENT_PAGE, "", "",10,array(), $query);
+        $this->registerVar("item", $item);
+        $this->display('admin/auto/areacliente/grid2');
+    }
+	
     public function grid(){
         $this->display('admin/auto/areacliente/grid');
     }

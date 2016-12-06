@@ -52,6 +52,3 @@ class Ajax{
         $this->html->LoadJQueryFunction(str_replace("%ajax%", $ajax, $function));
     }
 }
-
-
-?>

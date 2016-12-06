@@ -42,6 +42,33 @@ class gridComponent extends MasterComponent{
             echo "</li>";
         }
     }
+	
+			protected function DrawItem($item){
+				if(empty ($item)) {return;}
+				$this->cur_item = $item;
+				$links = $this->getActionLinks($this->modelname, $this->pkey, $this->cur_item);
+				$id    = $this->getId();
+				$lini  = $linf = "";
+				$link  = (is_array($links))? implode(" ", $links):"";
+
+				echo "<div class='container'$id>$lini";
+				foreach($this->cur_item as $name => $it){
+					$this->DrawSubItem($name, $it);
+				}
+				echo "$link $linf </div>";
+			}
+			
+					private function DrawSubItem($name, $it){
+						if($this->checkIsPrivate($this->dados, $name)) {return;}
+						$it = $this->formatType($name, $this->dados, $it, $this->cur_item);
+						if(is_array($it) && isset($this->dados[$name]['fkey'])){
+							 $this->LoadComponent($this->dados[$name]['fkey']['model'], 'md');
+							 $this->md->listar($this->dados[$name]['fkey']['model'], $it);
+						}elseif(!is_array($it)){
+							echo "<span class='$name'>$it</span>";
+						}
+						else $this->show($this->model, $it);
+					}
     
     public function closeList(){
                 echo "</ul>";
@@ -60,34 +87,7 @@ class gridComponent extends MasterComponent{
         }elseif(array_key_exists($this->pkey, $this->cur_item)){$id = $this->cur_item[$this->pkey];}
         return ($id != "")?" id='$id'":'';
     }
-    
-    private function DrawSubItem($name, $it){
-        if($this->checkIsPrivate($this->dados, $name)) {return;}
-        $it = $this->formatType($name, $this->dados, $it, $this->cur_item);
-        if(is_array($it) && isset($this->dados[$name]['fkey'])){
-             $this->LoadComponent($this->dados[$name]['fkey']['model'], 'md');
-             $this->md->listar($this->dados[$name]['fkey']['model'], $it);
-        }elseif(!is_array($it)){
-            echo "<span class='$name'>$it</span>";
-        }
-        else $this->show($this->model, $it);
-    }
-    
-    protected function DrawItem($item){
-        if(empty ($item)) {return;}
-        $this->cur_item = $item;
-        $links = $this->getActionLinks($this->modelname, $this->pkey, $this->cur_item);
-        $id    = $this->getId();
-        $lini  = $linf = "";
-        $link  = (is_array($links))? implode(" ", $links):"";
-        
-        echo "<div class='container'$id>$lini";
-        foreach($this->cur_item as $name => $it){
-            $this->DrawSubItem($name, $it);
-        }
-        echo "$link $linf </div>";
-    }
-    
+	
     public function setModel($model){
         $this->LoadModel($model, 'model');
         $this->modelname = $model;

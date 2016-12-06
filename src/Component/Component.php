@@ -295,14 +295,18 @@ class Component extends Object{
             return trim($this->$method($valor, $dados, $item));
         }
         if(is_array($valor)) {return $valor;}
-        if(!array_key_exists($name, $dados) || !array_key_exists('type', $dados[$name])) {
+		if(!array_key_exists($name, $dados) || !array_key_exists('type', $dados[$name])) {
             return trim($valor);
         }
+		
+		//print_rd($dados[$name]);
+		$this->LoadResource('formulario/format', 'fmt')->format($dados[$name], $valor);
+        return $valor;
         
-        $fn = "formatType".ucfirst($dados[$name]["type"]);
-        if(method_exists($this, $fn)){$this->$fn($valor, $name, $dados);}
-        
-        return $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
+//        $fn = "formatType".ucfirst($dados[$name]["type"]);
+//        if(method_exists($this, $fn)){$this->$fn($valor, $name, $dados);}
+//        
+//        return $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
     }
             private function formatTypeAddFkeyLink($valor, $dados, $name,$item){
                 $val = trim($valor);

@@ -17,6 +17,27 @@ abstract class listComponent extends CComponent{
         $this->findEnumClasses();
         $this->findAvaibleClasses();
     }
+
+			private $addclass = array();
+			private function findEnumClasses(){
+				foreach($this->dados as $nm => $d){
+					if(!is_array($d)) continue;
+					if(array_key_exists('type', $d) && $d['type'] == 'enum'){
+						$this->addclass[] = $nm;
+					}
+				}
+			}
+
+			private $avaibleClasses = array();
+			private function findAvaibleClasses(){
+				foreach($this->dados as $nm => $d){
+					if(!is_array($d)) continue;
+					if(array_key_exists('type', $d) && $d['type'] == 'enum'){
+						$this->avaibleClasses[$nm] = $nm;
+					}
+				}
+				return $this->avaibleClasses;
+			}
     
     protected $itens = array();
     public function setItens($itens){
@@ -31,16 +52,6 @@ abstract class listComponent extends CComponent{
     protected $class = "";
     public function setClass($class){
         $this->class = ($class == "")?"":" class='$class'";
-    }
-    
-    private $addclass = array();
-    private function findEnumClasses(){
-        foreach($this->dados as $nm => $d){
-            if(!is_array($d)) continue;
-            if(array_key_exists('type', $d) && $d['type'] == 'enum'){
-                $this->addclass[] = $nm;
-            }
-        }
     }
     
     protected function print_paginator_if_exists(){
@@ -74,17 +85,6 @@ abstract class listComponent extends CComponent{
         return $class;
     }
     
-    private $avaibleClasses = array();
-    private function findAvaibleClasses(){
-        foreach($this->dados as $nm => $d){
-            if(!is_array($d)) continue;
-            if(array_key_exists('type', $d) && $d['type'] == 'enum'){
-                $this->avaibleClasses[$nm] = $nm;
-            }
-        }
-        return $this->avaibleClasses;
-    }
-    
     protected $showOnlyListItem = false;
     public function showOnlyListItem(){
         $this->showOnlyListItem = true;
@@ -92,5 +92,3 @@ abstract class listComponent extends CComponent{
     
     abstract public function listar();
 }
-
-?>
