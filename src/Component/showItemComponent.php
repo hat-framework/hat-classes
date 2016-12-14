@@ -153,13 +153,15 @@ class showItemComponent extends Object{
         echo "<hr />";
     }
     
-    public function DrawShowItem($name, $var, $arr, $item, $classname){
-        if(!$this->canShow($name, $arr)) {return;}
-        if(!$this->formatType($arr, $var)) {return;}
+    public function DrawShowItem($name, $item_value, $dados, $item, $classname){
+        if(!$this->canShow($name, $dados)) {return;}
+        $value = $this->component->formatType($name, array($name=>$dados), $item_value, $item);
+		if($value == "" || empty($value)) {return;}
+		//formatType($name, $dados, $valor, $item = array())
         $__class = $this->component->getShowItemClass($name);
         $this->drawType("<span id='$name' class='$__class c_item $classname'>");
-        $this->drawLabel($arr, $name);
-        $this->drawContent($name, $var, $arr, $item, $classname);
+        $this->drawLabel($dados, $name);
+        $this->drawContent($name, $value, $dados, $item, $classname);
         $this->drawType("</span>");
     }
     
@@ -170,36 +172,13 @@ class showItemComponent extends Object{
             }
             
                     public function checkIsPrivate($dados, $name){
-                        if(@$name[0] == "_" && @$name[1] == "_") return true;
-                        if(!array_key_exists($name, $dados)) return false;
-                        if(!is_array($dados[$name])) return true;
-                        if(array_key_exists('private', $dados[$name]) && $dados[$name]['private'] == true ) return true;
-                        if(array_key_exists('mobile_hide', $dados[$name]) && $dados[$name]['mobile_hide'] == true && MOBILE == true) return true;
+						if(@$name[0] == "_" && @$name[1] == "_") {return true;}
+						if(!array_key_exists($name, $dados)) {return false;}
+						if(!is_array($dados[$name])) {return true;}
+						if(array_key_exists('private', $dados[$name]) && $dados[$name]['private'] == true ) {return true;}
+						if(array_key_exists('mobile_hide', $dados[$name]) && $dados[$name]['mobile_hide'] == true && MOBILE == true) {return true;}
                         return false;
                     }
-            
-            private function formatType($arr, &$var){
-                if(array_key_exists('type', $arr)){
-                    $type = $arr['type'];
-                    switch ($type){
-                        case 'date':
-                            if($var == '0000-00-00' || $var == '0000-00-00 00:00:00'){ $var = ""; }
-                            else $var = \classes\Classes\timeResource::Date2StrBr($var, false);
-                            break;
-                        case 'datetime': 
-                        case 'timestamp': 
-                            if($var == '0000-00-00' || $var == '0000-00-00 00:00:00'){ $var = ""; }
-                            else $var = \classes\Classes\timeResource::Date2StrBr($var);
-                            break;
-                        case 'bit': 
-                            $var = ($var == 1 || $var === true)?"Sim":"Não";
-                            break;
-                    }
-                }
-                if(!is_array($var)) $var = trim($var);
-                if($var == "" || empty($var)) {return false;}
-                return true;
-            }
     
             public function drawLabel($arr, $name){
                 if(!$this->showlabel) {return;}
