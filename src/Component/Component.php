@@ -297,16 +297,13 @@ class Component extends Object{
         if(is_array($valor)) {return $valor;}
 		if(!array_key_exists($name, $dados) || !array_key_exists('type', $dados[$name])) {
             return trim($valor);
-        }
-		
-		//print_rd($dados[$name]);
+        }		
+		if(isset($dados[$name]['fkey']) && array_key_exists("__$name", $item)){
+			$valor = $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
+			return $valor;
+		}
 		$this->LoadResource('formulario/format', 'fmt')->format($dados[$name], $valor);
         return $valor;
-        
-//        $fn = "formatType".ucfirst($dados[$name]["type"]);
-//        if(method_exists($this, $fn)){$this->$fn($valor, $name, $dados);}
-//        
-//        return $this->formatTypeAddFkeyLink($valor, $dados, $name,$item);
     }
             private function formatTypeAddFkeyLink($valor, $dados, $name,$item){
                 $val = trim($valor);
@@ -317,45 +314,6 @@ class Component extends Object{
                     $val     = ($append!= "")?$append:$val;
                 }
                 return $val;
-            }
-    
-            public function formatTypeDate(&$valor){
-                if($valor == '0000-00-00') {return "";}
-                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
-            }
-            
-            public function formatTypeDatetime(&$valor){
-                if($valor == '0000-00-00') {return "";}
-                $valor = \classes\Classes\timeResource::getFormatedDate($valor);
-            }
-            public function formatTypeTimestamp(&$valor){
-                $this->formatTypeDatetime($valor);
-            }
-            public function formatTypeTime(&$valor){
-                if($valor == '00:00:00' || $valor == '00:00') {$valor = "";}
-            }
-            
-            public function formatTypeText(&$valor){
-                if($this->keeptags){return;}
-                $valor = strip_tags($valor, "<b><a><ul><li><ol><i><u>");
-                if(strlen($valor) <= MAX_STR_IN_LIST) {return;}
-                $valor = Resume($valor, MAX_STR_IN_LIST);
-            }
-            public function formatTypeVarchar(&$valor){
-                $this->formatTypeText($valor);
-            }
-            public function formatTypeBit(&$valor){
-                $valor = ($valor == 1 || $valor === true)?"Sim":"Não";
-            }
-            public function formatTypeEnum(&$valor, $name, $dados){
-                $valor = (isset($dados[$name]['options'][$valor]))?$dados[$name]['options'][$valor]: ucfirst($valor);
-            }
-            public function formatTypeDecimal(&$valor, $name, $dados){
-                if(!is_numeric($valor) || !isset($dados[$name]['size'])) {return;}
-                $e      = explode(',', $dados[$name]['size']);
-                $casas  = end($e);
-                if($casas == "") {$casas = 2;}
-                $valor  = number_format($valor, $casas, ',', '.');
             }
     
     public function form($model, $values = array(), $ajax = true, $url = ""){

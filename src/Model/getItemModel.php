@@ -138,17 +138,26 @@ class getItemModel extends \classes\Classes\Object{
                                 $card = "fk".$value['fkey']['cardinalidade'];
                                 if($card == '1n' && !isset($var[$name])) {$var[$name] = $this->cod_item;}
                                 if(isset($var[$name])){$var["__$name"] = $var[$name];}
+								
+								$campo		= $this->getFkeyField($value);
                                 $var[$name] = $this->model->$card->selecionar(
                                         isset($var[$name])?$var[$name]:"$name", 
                                         $value['fkey'], 
-                                        $this->campo,
+                                        $campo,
                                         $this->cod_item, 
                                         $this->model_name, 
                                         isset($value['fkey']['sort'])?$value['fkey']['sort']:""
                                 );
-                                //echo "<br/>$name <br/> ";print_r($var[$name]); echo "<br/>".$this->db->getSentenca() . "<br/> \n ".$this->$card->getErrorMessage() ."<br/><hr/>\n\n";
+                                //echo "<br/>$name <br/> ";print_r($var[$name]); 
+								//echo "<br/>".$this->model->db->getSentenca() . "<br/> \n ".$this->model->$card->getErrorMessage() ."<br/><hr/>\n\n";
                                 if($value['fkey']['cardinalidade'] == "nn" && is_array($var[$name])) {$var["__$name"] = array_keys ($var[$name]);}
                             }
+							
+									private function getFkeyField($value){
+										if(!isset($value['fkey']['keys'][0])){return $this->campo;}
+										$dados = $this->temp_model->getDados();
+										return(array_key_exists($value['fkey']['keys'][0], $dados))?$value['fkey']['keys'][0]:$this->campo;
+									}
                             
                             private function processItemType($value, &$var, $name){
                                 if($value['type'] != "enum" || !isset($var[$name])) {return;}
