@@ -26,9 +26,9 @@ class EventTube{
     }
     
     static public function removeItemFromMenu($region, $nome_item){
-        if(!isset(self::$events['event_tube_menu'][$region])) return false;
+		if(!isset(self::$events['event_tube_menu'][$region])) {return false;}
         $menu = self::$events['event_tube_menu'][$region];
-        if(empty($menu)) return false;
+		if(empty($menu)) {return false;}
         self::removeItemFromSubMenu($menu, $nome_item);
         self::$events['event_tube_menu'][$region] = $menu;
         return true;
@@ -47,6 +47,13 @@ class EventTube{
             if(is_array($arr[$name]))self::removeItemFromSubMenu($arr[$name], $nome_item);
         }
     }
+	
+    static public function getMenuArray($region){
+		if(isset(self::$events['event_tube_menu'][$region])){
+			return self::$events['event_tube_menu'][$region][0]['menu'];
+		}
+		return array();
+	}
     
     static public function clearRegion($region){
         if(isset(self::$events[$region])) 

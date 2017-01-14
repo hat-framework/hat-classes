@@ -353,22 +353,33 @@ class CController extends \classes\Controller\Controller {
     }
     
     public function search($display = true, $link = ""){
-        $link = ($link == "")? "admin/auto/areacliente/page":$link;
-        $str  = array();
-        $dados = $this->model->getDados();
-        foreach($_GET as $name => $var){
-            if(!array_key_exists($name, $dados)){continue;}
-            $str[] = "$name='$var'";
-        }
-        $where = implode(' AND ', $str);
+		if($link == ""){$link = "admin/auto/areacliente/page";}
+        $where = $this->prepareWhere();
+		$qtd   = isset($_GET['_qtd'])?$_GET['_qtd']:20;
         $this->setPage();
         $method = $this->paginate_method;
-        $item   = $this->model->$method($this->page, CURRENT_PAGE, '','',20,array(),$where);
+        $item   = $this->model->$method($this->page, CURRENT_PAGE, '','',$qtd,array(),$where);
         $this->registerVar("item"        , $item);
         $this->registerVar("comp_action" , 'listInTable');
         $this->registerVar("show_links"  , '');
     	if($display) $this->display($link);
     }
+	
+			private function prepareWhere(){
+				$str  = array();
+				$dados = $this->model->getDados();
+				foreach($_GET as $name => $var){
+					if(!array_key_exists($name, $dados)){continue;}
+					$k = "_{$name}_op";
+					if(array_key_exists($k, $_GET)){
+						if($_GET[$k] == "LIKEP"){$str[] = "$name LIKE '$var%'";}
+						elseif($_GET[$k] == "PLIKEP"){$str[] = "$name LIKE '%$var%'";}
+						else{$str[] = "$name {$_GET[$k]} '$var'";}
+					}else{$str[] = "$name='$var'";}
+				}
+				$where = implode(' AND ', $str);
+				return $where;
+			}
     
     public function app(){
         if(!isset($this->vars[0])) Redirect (LINK . "/show");
@@ -418,4 +429,8 @@ class CController extends \classes\Controller\Controller {
         $this->registerVar('gadget', $this->sga->getItem($this->vars[0]));
         $this->display('site/gadget/index');
     }
+	
+	public function changeMenu(){
+		
+	}
 }

@@ -29,7 +29,7 @@ abstract class system extends Object {
                 $this->checkMobile();
                 $this->setBaseData();
                 $this->defineBaseData();
-                $this->setMenu();
+				$this->setMenu();
             }
             
                     private function checkMobile(){
@@ -82,7 +82,6 @@ abstract class system extends Object {
                         if($v == ""){
                             $this->LoadModel('site/menu', 'smenu');
                             $menu = $this->smenu->getMenu();
-
                             $this->LoadJsPlugin('menu/dropdown', 'menu');
                             $this->menu->imprime();
                             $v = $this->menu->draw($menu, "menu");

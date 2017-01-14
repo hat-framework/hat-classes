@@ -45,11 +45,13 @@ class CSystem extends System {
     
     public function catchExcetion($code, $msg){
         if($code == 0){$code = 500;}
-        $vars['filename'] = $this->findFile($code);
-        $vars['erro']     = "$code $msg";
+        $vars['erro']     = $msg;
+        $vars['code']     = $code;
+        $vars['status']   = '0';
         $view = new \classes\Classes\View();
         $view->registerVars($vars);
         $view->execute('admin/exception/index');
+        $vars['filename'] = $this->findFile($code);
         try{
             \classes\Utils\Log::save("system/Exception", $_SERVER['REQUEST_URI']." - $code - $msg");
             \usuario_loginModel::user_action_log('exception', "erro:$code  msg:$msg");

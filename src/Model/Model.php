@@ -200,7 +200,7 @@ class Model extends Object
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
         $this->LoadResource("html", 'html');
-        $this->pag->startDebug();
+        //$this->pag->startDebug();
 
         $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
@@ -940,13 +940,13 @@ class Model extends Object
                 
             }
 	
-    public function importDataFromCsv($fn){
+    public function importDataFromCsv($fn, $separator = ","){
 		if (empty($_FILES)) {return true;}
 		if (isset($_FILES['file']['error']) && $_FILES['file']['error'] != "0") {
 			return $this->setErrorMessage('Erro ao fazer o upload do arquivo');
 		}
 		
-		$csv = $this->LoadResource('files/csv', 'csv')->getCsvResource($_FILES['file']['tmp_name'], $separator = ",", "", true);
+		$csv = $this->LoadResource('files/csv', 'csv')->getCsvResource($_FILES['file']['tmp_name'], $separator, "", true);
 		$data = $csv->getAllLines();
 		if(is_callable($fn)){
 			foreach ($data as $cod => &$dt) {
@@ -958,14 +958,26 @@ class Model extends Object
 	}
 	
     public function importDataFromArray($dados, $insertIgnore = false){
-        $callback = $this->getImportationCallback();
-        $cbkdata  = $this->getImportationCallbackData();
-        if(false === $this->db->importDataFromArray($dados, $this->tabela, $callback, $insertIgnore, $cbkdata)){
+        $callback       = $this->getImportationCallback();
+        $cbkdata        = $this->getImportationCallbackData();
+		$ckbStatemensFn = $this->getCallBackStatementsFn();
+        if(false === $this->db->importDataFromArray($dados, $this->tabela, $callback, $insertIgnore, $cbkdata, $ckbStatemensFn)){
             return $this->setErrorMessage($this->db->getErrorMessage());
         }
         return true;
     }
-    
+	
+    protected function getCallBackStatementsFn(){
+        return null;
+		/*
+		$out = array();
+        foreach($keys as &$k){
+            $out[] = "`$k`=COALESCE( VALUES(`$k`), `$k`)";
+        }
+        return implode(",", $out);
+		 */
+    }
+	
     protected function getImportationCallback(){
         return null;
     }
