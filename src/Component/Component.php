@@ -6,6 +6,7 @@ use classes\Classes\EventTube;
 use timeResource;
 class Component extends Object{
     
+    protected $showConfig              = array();
     protected $showlabel               = true;
     public    $list_in_table           = false;
     protected $drawShowInTable         = true;
@@ -16,6 +17,7 @@ class Component extends Object{
     protected $show_item_class         = 'c_description';
     protected $show_item_title_class   = '';
     protected $show_item_content_class = '';
+	
     //protected $listActions = array('Veja Mais' => "show", 'Editar' => "edit", 'Excluir' => "apagar");
     protected $listActions = array('Veja Mais' => "show");
     public function __construct() {
@@ -129,6 +131,10 @@ class Component extends Object{
     private $keeptags = false;
     public function keepTags(){
         $this->keeptags = true;
+    }
+	
+    public function setShowConfig($showConfig){
+        $this->showConfig = $showConfig;
     }
 
     public function listInTable($model, $itens, $title = "", $class = '', $drawHeaders = false, $header = array()){
@@ -323,14 +329,14 @@ class Component extends Object{
         $dados = $this->md->getDados();
         $this->form->NewForm($dados, $values, array(), $ajax, $url);
     }
-    
+    	
     public function show($model, $item){
         $s = new showItemComponent($this);
         $s->setAppendName($this->append_name);
         $s->setShowlabel($this->showlabel);
         $this->dados = $s->loadDados($model);
         if($this->drawShowInTable){$s->enableTablePrint();}
-        $s->show($model, $item);
+        $s->show($model, $item, $this->showConfig);
     }
     
     protected function pode_exibir($model, $item){

@@ -32,7 +32,7 @@ class showItemComponent extends Object{
     }
     
     private function checkItem($model, $item){
-        if(!is_array($item) ||empty ($item)) return false;
+		if(!is_array($item) ||empty ($item)) {return false;}
         if(!$this->pode_exibir($model, $item)){
             $this->conteudo_bloqueado();
             return false;
@@ -60,22 +60,37 @@ class showItemComponent extends Object{
         $this->drawInTable = false;
         return $this;
     }
+	private $_config = array(
+		'container_class'        => "col-xs-12",
+		'draw_fkn1_in_container' => true,
+		'draw_fkn1'				 => true,
+		'panel_title'			 => "Dados",
+		'panel_class'			 => "panel_item",
+		'fkn1_container_class'	 => "col-xs-12"
+	);
 
-
-    public function show($model, $item){
+    public function show($model, $item, $config = array()){
+		$conf = array_merge($this->_config, $config);
         if(!$this->checkItem($model, $item)){return;}
         $this->loadDados($model);
         
         $id = str_replace("/", "_", $model);
-        $this->gui->opendiv($id, "col-xs-12");
+        $this->gui->opendiv($id, $conf['container_class']);
         $this->component->drawTitle($item);
-        $this->gui->openPanel('panel_item')
-                  ->panelHeader("Dados")
+        $this->gui->openPanel($conf['panel_class'])
+                  ->panelHeader($conf['panel_title'])
                   ->panelBody($this->printData($item))
                   ->closePanel();
-        $this->printFkn1();
+		if($conf['draw_fkn1_in_container']){$this->printFkn1();}
         $this->gui->closediv()
                   ->clear();
+		
+		if($conf['draw_fkn1'] && !$conf['draw_fkn1_in_container']){
+			$this->gui->opendiv("{$id}_n1", $conf['fkn1_container_class']);
+				$this->printFkn1();
+			$this->gui->closediv()
+                  ->clear();
+		}
     }
     
             private function printData($item){
@@ -90,9 +105,7 @@ class showItemComponent extends Object{
                     $this->gui->openPanel('panel_item')
                               ->panelHeader(isset($data['dados']['name'])?$data['dados']['name']:"")
                               ->panelBody($this->sfk->exibir($data['dados'], $data['var'], $data['name']))
-                              ->closePanel()
-                              ->closediv()
-                              ->clear();
+                              ->closePanel();
                     
                 }
             }
