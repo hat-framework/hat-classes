@@ -6,7 +6,7 @@ use classes\Classes\EventTube;
 use timeResource;
 class Component extends Object{
     
-    protected $showConfig              = array();
+	protected $showConfig			   = array();
     protected $showlabel               = true;
     public    $list_in_table           = false;
     protected $drawShowInTable         = true;
@@ -133,9 +133,9 @@ class Component extends Object{
         $this->keeptags = true;
     }
 	
-    public function setShowConfig($showConfig){
-        $this->showConfig = $showConfig;
-    }
+	public function setShowConfig($showConfig){
+		$this->showConfig = $showConfig;
+	}
 
     public function listInTable($model, $itens, $title = "", $class = '', $drawHeaders = false, $header = array()){
         $this->LoadModel($model, 'obj');
@@ -204,8 +204,8 @@ class Component extends Object{
             
             private function listInTablePrintTable($model, $class, $title, $table, $header){
                 $id  = str_replace("/", "_", $model);
-                $cls = ($class != "")? " class='$class'":"";
-                echo "<div$cls id='$id'> ";
+                $class .= " table-responsive";
+                echo "<div class='$class' id='$id'> ";
                     $this->gui->subtitle($title);
                     $this->LoadResource('html/table', 'tb');
                     $this->tb->forceDrawHeaders();
