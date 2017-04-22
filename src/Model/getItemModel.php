@@ -148,13 +148,16 @@ class getItemModel extends \classes\Classes\Object{
                                         $this->model_name, 
                                         isset($value['fkey']['sort'])?$value['fkey']['sort']:""
                                 );
-                                //echo "<br/>$name <br/> ";print_r($var[$name]); 
-								//echo "<br/>".$this->model->db->getSentenca() . "<br/> \n ".$this->model->$card->getErrorMessage() ."<br/><hr/>\n\n";
+//                                echo "<br/> $this->campo - $this->pkey: $name <br/>".$this->model->db->getSentenca() . 
+//                                     "<br/> \n ".$this->model->$card->getErrorMessage() ."<br/><hr/>\n\n";
+//                                print_rh($var[$name]); 
+//                                print_rh($value);
                                 if($value['fkey']['cardinalidade'] == "nn" && is_array($var[$name])) {$var["__$name"] = array_keys ($var[$name]);}
                             }
 							
 									private function getFkeyField($value){
 										if(!isset($value['fkey']['keys'][0])){return $this->campo;}
+//										if(!isset($value['fkey']['keys'][0]) || $value['fkey']['cardinalidade'] == 'n1'){return $this->campo;}
 										$dados = $this->temp_model->getDados();
 										return(array_key_exists($value['fkey']['keys'][0], $dados))?$value['fkey']['keys'][0]:$this->campo;
 									}

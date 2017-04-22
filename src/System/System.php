@@ -21,11 +21,28 @@ abstract class system extends Object {
         }  catch (\Exception $e){
             die($e->getMessage());
         }
-        $this->init();
     }
     
-             
-             public function init(){
+    public function run(){
+        $this->init();
+        $this->start();
+        $this->setTags();
+        $this->tokenAuth();
+        
+        $controlle = $this->getController();
+        $ajax      = $this->ajaxCheck();
+        $app       = $this->appCheck();
+        $this->plloader();
+        $this->loadController($controlle, $app, $ajax);
+        if(true === $this->callExtension($this->action)){return;}
+        
+        $action    = $this->checkAction();
+        $this->initializeCTRL($action);
+        $this->LoadUserMenu();
+        $this->callAction($action);
+    }
+    
+            public function init(){
                 $this->checkMobile();
                 $this->setBaseData();
                 $this->defineBaseData();
@@ -89,24 +106,6 @@ abstract class system extends Object {
                         }
                         \classes\Classes\EventTube::addEvent('menu-superior', $v);
                     }
-    
-    public function run(){
-        $this->start();
-        $this->setTags();
-        $this->tokenAuth();
-        
-        $controlle = $this->getController();
-        $ajax      = $this->ajaxCheck();
-        $app       = $this->appCheck();
-        $this->plloader();
-        $this->loadController($controlle, $app, $ajax);
-        if(true === $this->callExtension($this->action)){return;}
-        
-        $action    = $this->checkAction();
-        $this->initializeCTRL($action);
-        $this->LoadUserMenu();
-        $this->callAction($action);
-    }
     
             private function LoadUserMenu(){
                 if($this->lobj->IsLoged()){
@@ -248,16 +247,14 @@ abstract class system extends Object {
                     }
                     
                     public function security($class, $action){
-                        $has = false;
-                        if($this->lobj->setLastAccessOfUser()){$has = $this->lobj->has_permission_alterada();}
-                        
+                        $this->lobj->setLastAccessOfUser();
+                        $has = $this->lobj->has_permission_alterada();
                         if($this->controller == "") {$this->controller = 'index';}
                         $action_name = "$this->modulo/$this->controller/$action";
                         \usuario_loginModel::user_action_log();
                         $this->denyExternNonPublicRequisition($action_name);
                         $act_temp    = $action_name;
-                        $this->LoadModel('usuario/perfil', 'perm');
-                        $perm = $this->perm->hasPermission($act_temp, true, $has);
+                        $perm = $this->LoadModel('usuario/perfil', 'perm')->hasPermission($act_temp, true, $has);
                         if(!defined('PERMISSION')) {define("PERMISSION", $perm);}
                         if($perm == 'n'){
                             if($this->lobj->IsLoged()) {throw new \classes\Exceptions\AcessDeniedException();}
