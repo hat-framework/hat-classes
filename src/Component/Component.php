@@ -29,6 +29,15 @@ class Component extends Object{
         $foo = 1;
     }
     
+    private $formatting = true;
+    public function disableFormat(){
+        $this->formatting = false;
+    }
+    
+    public function enableFormat(){
+        $this->formatting = true;
+    }
+    
     public function addListAction($name, $link){
         $this->listActions[$name] = $link;
     }
@@ -296,6 +305,7 @@ class Component extends Object{
     }
     
     public function formatType($name, $dados, $valor, $item = array()){
+        if($this->formatting === false){return $valor;}
         $method = "format_$name";
         if(method_exists($this, $method)) {
             return trim($this->$method($valor, $dados, $item));
@@ -314,8 +324,8 @@ class Component extends Object{
             private function formatTypeAddFkeyLink($valor, $dados, $name,$item){
                 $val = trim($valor);
                 if(isset($dados[$name]['fkey']) && array_key_exists("__$name", $item)){
-                    $cod     = $item["__$name"];
-                    $md_link = $dados[$name]['fkey']['model'];
+                    $cod     = is_array($item["__$name"])? implode("/", $item["__$name"]):$item["__$name"];
+                    $md_link = (isset($dados[$name]['fkey']['showmodel']))?$dados[$name]['fkey']['showmodel']:$dados[$name]['fkey']['model'];
                     $append  = $this->Html->getActionLinkIfHasPermission("$md_link/show/$cod", $val,'', "","","", true);
                     $val     = ($append!= "")?$append:$val;
                 }
