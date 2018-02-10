@@ -382,31 +382,35 @@ class CController extends \classes\Controller\Controller {
 			}
     
     public function app(){
-        if(!isset($this->vars[0])) Redirect (LINK . "/show");
-        $cod_app = array_shift($this->vars);
-        $method  = array_shift($this->vars);
-        $this->LoadModel('app/aplicativo', 'app');
-        $app = $this->app->getItem($cod_app);
-        if(empty($app)) Redirect (LINK . "/show");
-        $model = "app/{$app['aplicativo']}";
-        $this->LoadClassFromPlugin("$model/{$app['aplicativo']}Controller", 'cont');
-        if(!method_exists($this->cont, $method)) $method = 'index';
-        $this->cont->setDocument(LINK."/$this->cod");
-        $this->cont->$method();
+      if(!isset($this->vars[0])) Redirect (LINK . "/show");
+      $cod_app = array_shift($this->vars);
+      $method  = array_shift($this->vars);
+      $this->LoadModel('app/aplicativo', 'app');
+      $app = $this->app->getItem($cod_app);
+      if(empty($app)) Redirect (LINK . "/show");
+      $model = "app/{$app['aplicativo']}";
+      $this->LoadClassFromPlugin("$model/{$app['aplicativo']}Controller", 'cont');
+      if(!method_exists($this->cont, $method)) $method = 'index';
+      $this->cont->setDocument(LINK."/$this->cod");
+      $this->cont->$method();
     }
     
-	 public function grid2() {
-		$query = "";
-		if(!empty($_GET) && count($_GET) > 1){
-			$temp = $this->LoadResource('formulario/filter', 'sgen')->getQuery($_GET, $this->model_name);
-			$query = implode(" AND ", $temp);
-		}
-        $this->model->importDataFromCsv(null);
-		$this->setVars($this->model->getMessages());
-		$this->setPage();
-		$item = $this->model->paginate($this->page, CURRENT_PAGE, "", "",10,array(), $query);
-        $this->registerVar("item", $item);
-        $this->display('admin/auto/areacliente/grid2');
+	  public function grid2() {
+      $var = $this->getVar('css');
+      if($var === ""){
+        $this->registerVar('css', array());
+      }
+      $query = "";
+      if(!empty($_GET) && count($_GET) > 1){
+        $temp = $this->LoadResource('formulario/filter', 'sgen')->getQuery($_GET, $this->model_name);
+        $query = implode(" AND ", $temp);
+      }
+      $this->model->importDataFromCsv(null);
+      $this->setVars($this->model->getMessages());
+      $this->setPage();
+      $item = $this->model->paginate($this->page, CURRENT_PAGE, "", "",10,array(), $query);
+      $this->registerVar("item", $item);
+      $this->display('admin/auto/areacliente/grid2');
     }
 	
     public function grid(){
