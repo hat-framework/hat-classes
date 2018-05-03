@@ -139,7 +139,7 @@ class getItemModel extends \classes\Classes\Object{
                                 if($card == '1n' && !isset($var[$name])) {$var[$name] = $this->cod_item;}
                                 if(isset($var[$name])){$var["__$name"] = $var[$name];}
 								
-								$campo		= $this->getFkeyField($value);
+                                $campo = $this->getFkeyField($value);
                                 $var[$name] = $this->model->$card->selecionar(
                                         isset($var[$name])?$var[$name]:"$name", 
                                         $value['fkey'], 
@@ -148,25 +148,24 @@ class getItemModel extends \classes\Classes\Object{
                                         $this->model_name, 
                                         isset($value['fkey']['sort'])?$value['fkey']['sort']:""
                                 );
-//                                echo "<br/> $this->campo - $this->pkey: $name <br/>".$this->model->db->getSentenca() . 
-//                                     "<br/> \n ".$this->model->$card->getErrorMessage() ."<br/><hr/>\n\n";
-//                                print_rh($var[$name]); 
-//                                print_rh($value);
                                 if($value['fkey']['cardinalidade'] == "nn" && is_array($var[$name])) {$var["__$name"] = array_keys ($var[$name]);}
                             }
 							
 									private function getFkeyField($value){
 										if(!isset($value['fkey']['keys'][0])){return $this->campo;}
-//										if(!isset($value['fkey']['keys'][0]) || $value['fkey']['cardinalidade'] == 'n1'){return $this->campo;}
 										$dados = $this->temp_model->getDados();
 										return(array_key_exists($value['fkey']['keys'][0], $dados))?$value['fkey']['keys'][0]:$this->campo;
 									}
                             
                             private function processItemType($value, &$var, $name){
-                                if($value['type'] != "enum" || !isset($var[$name])) {return;}
-                                $var["__$name"] = $var[$name]; 
-                                $var[$name] = isset($value['options']) && isset($var[$name]) && isset($value['options'][$var[$name]])?
-                                    $value['options'][$var[$name]]:"";
+                              if(isset($value['especial']) && $value['especial'] === 'multi_enum') {
+                                $var[$name] = unserialize($var[$name]);
+                                return;
+                              }
+                              if($value['type'] != "enum" || !isset($var[$name])) {return;}
+                              $var["__$name"] = $var[$name]; 
+                              $var[$name] = isset($value['options']) && isset($var[$name]) && isset($value['options'][$var[$name]])?
+                                  $value['options'][$var[$name]]:"";
                             }
                     
                     private function processItemCampo(&$ret, $var){
