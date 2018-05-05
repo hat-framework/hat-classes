@@ -26,6 +26,7 @@ class Model extends Object
     public $fkn1;
     public $fknn;
     public $fkmodel;
+    protected $debugPaginate = false;
     
     public function  __construct() {
         $this->fkmodel   = new FKModel();
@@ -172,10 +173,11 @@ class Model extends Object
         if($cardinalidade != 'n1') {return false;}
         $this->LoadModel($model, 'md');
         $qtd     = isset($limit)? $limit:"10";
+        $order   = isset($sort)? $sort:"";
         $filther = isset($filther)?$filther:'';
         
         $where = $this->getSublistWhere($cod_pkey, $filther);
-        return $this->md->paginate($page, $link, "", "", $qtd, array(), $where);
+        return $this->md->paginate($page, $link, "", "", $qtd, array(), $where, $order);
     }
     
             private function getSublistWhere($cod_pkey, $filther){
@@ -200,7 +202,9 @@ class Model extends Object
     public function paginate($page, $link = "", $cod_item = "", $campo = "", $qtd =20, $campos = array(), $adwhere = "", $order = ""){
         $this->LoadResource("html/paginator", 'pag');
         $this->LoadResource("html", 'html');
-        //$this->pag->startDebug();
+        if($this->debugPaginate === true) {
+          $this->pag->startDebug();
+        }
 
         $where  = $this->getPaginateWhere($cod_item, $campo, $adwhere);
         $lk     = ($link == "")? CURRENT_MODULE . "/" . CURRENT_CONTROLLER."/show/" : $link;
@@ -212,7 +216,12 @@ class Model extends Object
         
         $pk = is_array($this->pkey)?implode(", ", $this->pkey):$this->pkey;
         if($ordem == "") {$ordem = array_key_exists("ordem", $this->dados)?"ordem DESC":"$this->tabela.$pk DESC";}
-        return $this->pag->selecionar($this, $cps, $where, $ordem);
+        $out = $this->pag->selecionar($this, $cps, $where, $ordem);
+        if($this->debugPaginate === true) {
+          $this->pag->stopDebug();
+          print_in_table($out);
+        }
+        return $out;
     }
     
             private function getPaginateWhere($cod_item, $campo, $adwhere){
@@ -424,7 +433,6 @@ class Model extends Object
      * @return boolean true if inserts in database otherwise false
      */
     public function inserir($dados){
-
         //validacao dos dados
         $this->setMessage("is_editing", '0');
         $this->post = $dados;
@@ -440,6 +448,7 @@ class Model extends Object
         //associa os dados
         if(!$this->associa()) {return false;}
         
+//      print_rd($this->post);
         //insere os dados
         $this->lastid = $this->db->Insert($this->tabela, $this->post);
         if(!$this->InsertionProcessLastId($dados)){return false;}
