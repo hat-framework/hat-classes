@@ -435,6 +435,7 @@ class Model extends Object
      */
     public function inserir($dados){
         //validacao dos dados
+        $this->id = '';
         $this->setMessage("is_editing", '0');
         $this->post = $dados;
         if(!$this->validate()){return false;}
