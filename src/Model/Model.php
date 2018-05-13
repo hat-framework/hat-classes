@@ -12,6 +12,7 @@ class Model extends Object
     protected $dados = array();
     protected $post;
     protected $lastid;
+    private $ignoreRequired = false;
     
     protected $model_label       = "";
     protected $model_description = "";
@@ -496,7 +497,9 @@ class Model extends Object
         $this->setMessage("is_editing", '1');
         $this->post = $post;
         $this->id   = $id;
+        $this->ignoreRequired = true;
         if(!$this->validate())   {return false;}
+        $this->ignoreRequired = false;
         if(!$this->associa(true)){return false;}
 
         //atualiza o banco de dados
@@ -647,7 +650,7 @@ class Model extends Object
         if(false === $this->validadeEmptyPost()){return false;}
         $this->validateUnsetPkey();
         $this->post = $this->validateGetPost();
-        return $this->validateValidator();
+        return $this->validateValidator($this->ignoreRequired);
     }
     
             private function validadeEmptyPost(){
@@ -687,9 +690,9 @@ class Model extends Object
                 return $post;
             }
             
-            private function validateValidator(){
+            private function validateValidator($ignoreRequired = false){
                 $this->LoadResource("formulario/validator", "pval");
-                if(!$this->pval->validate($this->dados, $this->post)){
+                if(!$this->pval->validate($this->dados, $this->post, $ignoreRequired)){
                     $this->setSimpleMessage('validation', $this->pval->getMessages());
                     $e    = $this->getMessages();
                     $erro = (isset($e['validation']['erro'])?$e['validation']['erro']: "Erro ao validar os dados a serem inseridos");
