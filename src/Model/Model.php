@@ -963,9 +963,12 @@ class Model extends Object
 		$data = $csv->getAllLines();
 		if(is_callable($fn)){
 			foreach ($data as $cod => &$dt) {
-				$dt = $fn($cod, $dt);
+                $dt = $fn($cod, $dt);
+                if(empty($dt)) {
+                    unset($data[$cod]);
+                }
 			}
-		}
+        }
 		if (false === $this->importDataFromArray($data)) {return false;}
 		return $this->setSuccessMessage("Lista atualizada com sucesso!");
 	}
